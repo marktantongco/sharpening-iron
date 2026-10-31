@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FFD400">
+<title>Sharpening Iron — A letter from Mark to Rob</title>
+<meta name="description" content="Seven checkpoints. One covenant. A letter from Mark to Rob, set as a broadsheet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --y:#FFD400; --k:#0A0A0A; --p:#F2EEE3;
+  --rule:clamp(5px,.7vw,10px);
+  --pad:clamp(16px,3vw,48px);
+  --meter:38px;
+  --anton:'Anton',Impact,'Arial Narrow',sans-serif;
+  --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--k);color:var(--p);font-family:var(--mono);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:4px solid currentColor;outline-offset:3px}
+.t-y{--bg:var(--y);--ink:var(--k)}
+.t-k{--bg:var(--k);--ink:var(--y)}
+
+/* One fixed canvas. It only shows through the three transparent hero chapters. */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;visibility:hidden}
+.mast,.run,.calm,.foot,.chapter{position:relative;z-index:1}
+
+/* ───────── Altitude meter ───────── */
+.meter{position:fixed;inset:0 0 auto 0;z-index:40;height:var(--meter);display:grid;grid-template-columns:auto 1fr auto;
+  background:var(--k);color:var(--y);border-bottom:4px solid var(--y);font:700 12px/1 var(--mono);letter-spacing:.04em}
+.meter .lbl,.meter .pct{display:flex;align-items:center;padding:0 12px;white-space:nowrap}
+.meter .lbl{border-right:4px solid var(--y)}
+.meter .pct{border-left:4px solid var(--y);min-width:68px;justify-content:flex-end}
+.ticks{position:relative;display:grid;grid-template-columns:repeat(7,1fr);min-width:0}
+.tk{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:.6em;border-right:2px solid var(--y);padding:0 2px;color:var(--y)}
+.tk:last-of-type{border-right:0}
+.tk span{display:none}
+.tk.on b{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.tk:hover{background:var(--y);color:var(--k)}
+.fill{position:absolute;z-index:2;left:0;top:0;bottom:0;width:0;background:var(--y);mix-blend-mode:difference;pointer-events:none}
+@media (min-width:980px){.tk span{display:inline;font-weight:400}}
+@media (max-width:560px){.meter .lbl{display:none}.meter{grid-template-columns:1fr auto}}
+
+/* ───────── Shared parts ───────── */
+.stamp{display:inline-block;font:400 clamp(1rem,2.6vw,2.6rem)/.95 var(--anton);text-transform:uppercase;letter-spacing:.07em;text-align:center;
+  padding:.18em .42em .12em;border:.14em solid var(--ink,var(--k));background:var(--p);color:var(--k);transform:rotate(-8deg);pointer-events:none;z-index:3}
+.num{font:400 clamp(5.5rem,16vw,17rem)/.8 var(--anton);color:transparent;-webkit-text-stroke:clamp(2px,.34vw,5px) var(--ink);
+  transition:color .12s steps(2,end);user-select:none;cursor:default}
+.num:hover{color:var(--ink)}
+.quote{align-self:flex-start;max-width:34ch;background:var(--ink);color:var(--bg);font:700 clamp(1.05rem,2vw,1.9rem)/1.2 var(--mono);
+  padding:.85em 1.05em;transition:background .12s steps(2,end),color .12s steps(2,end)}
+.quote:hover{background:var(--p);color:var(--k)}
+.snippet{font-size:clamp(.92rem,1.12vw,1.08rem);line-height:1.6;max-width:50ch}
+.tag{align-self:flex-start;display:inline-flex;align-items:center;gap:.6em;background:var(--p);color:var(--k);
+  border:clamp(3px,.4vw,5px) solid var(--ink);padding:.55em .9em;font:700 clamp(.9rem,1.35vw,1.2rem)/1 var(--mono);
+  box-shadow:6px 6px 0 var(--ink);transition:transform .12s cubic-bezier(.2,.8,.2,1),box-shadow .12s,background .1s,color .1s;white-space:nowrap}
+.tag:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink);background:var(--ink);color:var(--bg)}
+.tag:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.tag i{font-style:normal;font-weight:400;opacity:.6;font-size:.8em}
+.emo-cell{display:grid;place-items:center;width:clamp(92px,13vw,210px);background:var(--p);border-left:var(--rule) solid var(--ink);perspective:520px;color:var(--k)}
+.emo{display:inline-block;font-size:clamp(3rem,6.6vw,6.8rem);line-height:1;transform-style:preserve-3d;user-select:none}
+
+/* ───────── Masthead (flat) ───────── */
+.mast{background:var(--p);color:var(--k);padding:calc(var(--meter) + clamp(14px,2.4vw,34px)) var(--pad) 0;border-bottom:var(--rule) solid var(--k)}
+.title{font:400 clamp(3.2rem,calc((100vw - 2*var(--pad))/4.9),24rem)/.86 var(--anton);text-transform:uppercase;letter-spacing:-.005em}
+.title .line{display:block;overflow:hidden;white-space:nowrap;perspective:700px;padding-top:.03em}
+.title .l2{display:flex;align-items:stretch;gap:2vw}
+.title .word{display:inline-block}
+.title .ch{display:inline-block;will-change:transform}
+.slot{flex:1;min-height:.7em;align-self:center;height:.62em}
+.slot svg{display:block;width:100%;height:100%}
+.bar{margin:clamp(14px,2vw,28px) calc(-1*var(--pad)) 0;background:var(--k);color:var(--y);padding:.9em var(--pad);
+  font:700 clamp(.72rem,1.25vw,1rem)/1.25 var(--mono);letter-spacing:.06em}
+.stamp-mast{position:absolute;right:var(--pad);top:calc(var(--meter) + 20px);background:var(--y);--ink:var(--k);font-size:clamp(1.1rem,3.4vw,3.4rem);transform:rotate(-7deg)}
+
+/* ───────── 3D hero chapters (01, 05, 07) ───────── */
+.chapter{height:340vh}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+.hd{position:absolute;z-index:3;top:calc(var(--meter) + 14px);left:14px;max-width:min(92vw,980px);display:flex;align-items:stretch;
+  background:var(--bg);color:var(--ink);border:var(--rule) solid var(--ink)}
+.hd .big{padding:.02em .12em 0 .08em;font:400 clamp(3.2rem,8.5vw,8rem)/.85 var(--anton);color:transparent;
+  -webkit-text-stroke:clamp(2px,.3vw,4px) var(--ink);border-right:var(--rule) solid var(--ink);user-select:none}
+.hd h2{padding:.5rem 1rem;align-self:center;font:400 clamp(1.4rem,3.4vw,3.6rem)/.98 var(--anton);text-transform:uppercase}
+.s-hd{position:absolute;right:16px;top:calc(var(--meter) + 20px);font-size:clamp(1rem,2.6vw,2.6rem)}
+.cap{position:absolute;z-index:3;left:0;right:0;bottom:0;display:grid;grid-template-columns:minmax(0,1fr) auto;
+  background:var(--bg);color:var(--ink);border-top:var(--rule) solid var(--ink)}
+.cap-txt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:clamp(12px,2vw,32px);padding:var(--pad)}
+.cap .quote{max-width:26ch}
+.flash{position:absolute;inset:0;z-index:2;background:var(--y);opacity:0;pointer-events:none}
+@media (max-width:860px){
+  .cap-txt{grid-template-columns:1fr;gap:12px;padding:14px var(--pad)}
+  .cap .snippet{font-size:.85rem;line-height:1.45}
+  .cap .quote{max-width:none;font-size:1rem}
+  .hd .big{font-size:clamp(2.6rem,13vw,4.4rem)}
+  .hd h2{font-size:clamp(1.1rem,5vw,1.7rem);padding:.4rem .7rem}
+}
+
+/* ───────── Flat run (02–04): one continuous rope-and-type pull ───────── */
+.run{height:340vh}
+.run-stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+.track{position:relative;display:flex;width:300vw;height:100%;will-change:transform}
+.braid{position:absolute;left:0;top:0;z-index:1;pointer-events:none}
+.panel{position:relative;flex:0 0 100vw;width:100vw;height:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  padding-top:var(--meter);overflow:hidden}
+.panel.k{background:var(--k);color:var(--y);--ink:var(--y);--bg:var(--k)}
+.panel.y{background:var(--y);color:var(--k);--ink:var(--k);--bg:var(--y)}
+.panel+.panel{border-left:var(--rule) solid var(--k)}
+.panel>.num,.panel>.body,.panel>.emo-cell{position:relative;z-index:2}
+.panel>.num{padding:.02em .1em 0 .06em;border-right:var(--rule) solid var(--ink);display:flex;align-items:flex-start;will-change:transform}
+.panel>.body{display:flex;flex-direction:column;gap:clamp(8px,1.8vh,22px);padding:var(--pad) var(--pad) 21vh;min-height:0}
+.panel>.emo-cell{border-left:var(--rule) solid var(--ink)}
+.panel h2{font:400 clamp(1.7rem,min(4.8vw,7.4vh),5rem)/.96 var(--anton);text-transform:uppercase;max-width:18ch}
+.art{position:relative;flex:1 1 0;min-height:0;display:grid;align-content:center}
+.mirror{font:400 clamp(2.4rem,min(9vw,13vh),9rem)/.9 var(--anton);text-transform:uppercase;white-space:nowrap}
+.m-rule{height:var(--rule);background:var(--ink);margin:.06em 0 .1em}
+.m-refl{position:relative;height:.9em;transform:scaleY(-1);opacity:.92}
+.m-refl span{position:absolute;left:0;top:0}
+.flow{display:grid;gap:.04em;font:400 clamp(3rem,min(12vw,16vh),12rem)/.86 var(--anton);text-transform:uppercase;white-space:nowrap}
+.flow .f{color:transparent;-webkit-text-stroke:clamp(2px,.3vw,4px) var(--ink);will-change:transform}
+.count{font:400 clamp(4rem,min(17vw,26vh),17rem)/.85 var(--anton);letter-spacing:-.01em}
+.count-lbl{font:700 clamp(.8rem,1.3vw,1.15rem)/1.3 var(--mono);letter-spacing:.04em;margin-top:.6em}
+.stamp4{position:absolute;right:2%;top:8%;background:var(--p);color:var(--k);--ink:var(--y);opacity:0;will-change:transform}
+@media (max-width:760px){
+  .panel{grid-template-columns:1fr auto;grid-template-rows:auto minmax(0,1fr)}
+  .panel>.num{font-size:clamp(4rem,22vw,7rem);border-right:0}
+  .panel>.emo-cell{width:clamp(84px,26vw,130px)}
+  .panel>.body{grid-column:1 / -1;border-top:var(--rule) solid var(--ink);padding-bottom:19vh}
+  .panel .snippet{font-size:.85rem;line-height:1.45}
+}
+
+/* ───────── 06 · silent and static: no motion, nothing animates ───────── */
+.calm{min-height:100vh;min-height:100svh;background:var(--p);color:var(--k);overflow:hidden;
+  padding:calc(var(--meter) + 5vh) var(--pad) var(--pad);display:block}
+.calm *{transition:none!important;animation:none!important}
+.calm .meta{position:relative;z-index:2;display:grid;gap:.9rem;max-width:42ch;font-size:.8rem;line-height:1.55}
+.calm .meta h2{font:700 .85rem/1.3 var(--mono);letter-spacing:.02em}
+.calm .meta .n{font:400 1.4rem/1 var(--anton)}
+.calm .quote-s{font-weight:700}
+.calm .tag{box-shadow:none;font-size:.8rem;padding:.5em .8em;border-width:3px}
+.calm .tag:hover,.calm .tag:active{transform:none;box-shadow:none;background:var(--p);color:var(--k)}
+.calm .em{font-size:1.4rem;line-height:1}
+.calm .yl{position:absolute;left:0;right:0;top:66%;height:clamp(3px,.5vw,6px);background:var(--y)}
+.calm .compass{position:absolute;right:clamp(24px,12vw,220px);top:66%;width:clamp(150px,22vw,300px);transform:translateY(-50%)}
+@media (max-width:760px){.calm .compass{right:20px;top:72%}.calm .yl{top:72%}}
+
+/* ───────── Footer ───────── */
+.foot{background:var(--p);color:var(--k);border-top:var(--rule) solid var(--k);padding:clamp(24px,4vw,64px) var(--pad) 0}
+.foot h2{font:400 clamp(2.2rem,6.6vw,7.4rem)/.94 var(--anton);text-transform:uppercase;max-width:15ch}
+.foot-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;margin:clamp(20px,3vw,44px) 0 clamp(20px,3vw,40px)}
+#barcode{width:min(260px,60vw);height:58px;display:block}
+.sig{font:400 clamp(1.6rem,3vw,2.6rem)/1 var(--anton);text-transform:uppercase;letter-spacing:.03em}
+.top{background:var(--k);color:var(--y);padding:.9em 1.2em;font:700 .9rem/1 var(--mono);letter-spacing:.05em;border:4px solid var(--k);transition:background .1s,color .1s}
+.top:hover{background:var(--y);color:var(--k)}
+.ticker{margin:0 calc(-1*var(--pad));background:var(--k);color:var(--y);overflow:hidden;border-top:var(--rule) solid var(--k)}
+.tick{display:flex;width:max-content;animation:tick 34s linear infinite;padding:.5em 0}
+.tick span{font:400 clamp(1.3rem,2.6vw,2.4rem)/1 var(--anton);letter-spacing:.06em;text-transform:uppercase;padding:0 1.1em;white-space:nowrap}
+.tick i{font-style:normal;align-self:center;font-size:.9rem}
+@keyframes tick{to{transform:translateX(-50%)}}
+.toast{position:fixed;left:50%;bottom:16px;z-index:60;transform:translate(-50%,160%);background:var(--k);color:var(--y);border:4px solid var(--y);
+  padding:.8em 1.1em;font:700 .95rem/1 var(--mono);letter-spacing:.05em;transition:transform .18s cubic-bezier(.2,.9,.2,1);pointer-events:none;max-width:92vw}
+.toast.on{transform:translate(-50%,0)}
+
+/* ───────── Reduced motion: no scrub, no horizontal pull. Scenes render in their resolved state. ───────── */
+html.reduce .chapter{height:100vh;height:100svh}
+html.reduce .run{height:auto}
+html.reduce .run-stage{position:relative;height:auto;overflow:visible}
+html.reduce .track{display:block;width:auto;transform:none!important}
+html.reduce .panel{width:100%;height:auto;min-height:100vh;min-height:100svh}
+html.reduce .panel+.panel{border-left:0;border-top:var(--rule) solid var(--k)}
+html.reduce .panel>.body{padding-bottom:var(--pad)}
+html.reduce .braid{display:none}
+html.reduce .tick{animation:none}
+html.reduce .toast,html.reduce .tag,html.reduce .num,html.reduce .quote{transition:none}
+
+/* ───────── No WebGL: chapters fall back to flat colour modules ───────── */
+html.nogl .chapter{height:auto}
+html.nogl .stage{position:relative;height:auto;min-height:100vh;overflow:visible;padding-top:var(--meter)}
+html.nogl .c1 .stage{background:var(--p)}
+html.nogl .c5 .stage{background:var(--y)}
+html.nogl .c7 .stage{background:var(--k)}
+html.nogl .hd,html.nogl .cap{position:relative;top:auto;left:auto;margin:14px}
+html.nogl .flash{display:none}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<nav class="meter" aria-label="Checkpoints">
+  <div class="lbl">CHECKPOINT <b id="cp">&nbsp;00</b>/07</div>
+  <div class="ticks" id="ticks"></div>
+  <div class="pct" id="pct">00%</div>
+</nav>
+
+<main>
+  <!-- Masthead: flat -->
+  <header class="mast" id="top">
+    <h1 class="title" aria-label="Sharpening Iron">
+      <span class="line" data-split>SHARPENING</span>
+      <span class="line l2"><span class="word" data-split>IRON</span><span class="slot" id="slot" aria-hidden="true"><svg id="slotsvg"></svg></span></span>
+    </h1>
+    <div class="bar">A LETTER FROM MARK TO ROB — VOL. 1 — NO. 7 CHECKPOINTS</div>
+    <div class="stamp stamp-mast" aria-hidden="true">EXCLUSIVE</div>
+  </header>
+
+  <!-- 01 · HERO 3D · The Quiet Summit -->
+  <section class="chapter c1" id="p1" data-short="HORIZON" data-scene="summit">
+    <div class="stage">
+      <div class="hd t-k"><div class="big" aria-hidden="true">01</div><h2>The Shared Horizon</h2></div>
+      <div class="stamp s-hd t-y" aria-hidden="true" style="transform:rotate(-8deg)">CHECKPOINT</div>
+      <div class="cap t-y">
+        <div class="cap-txt">
+          <p class="quote">“Different terrain, same mountain.”</p>
+          <p class="snippet">We’re both becoming the kind of people who make others feel safe enough to grow.</p>
+          <button class="tag" type="button" data-tag="#SameMountain" aria-label="Copy hashtag SameMountain">#SameMountain <i>COPY</i></button>
+        </div>
+        <div class="emo-cell"><span class="emo" role="img" aria-label="Mountain">🏔️</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02–04 · FLAT · one continuous rope-and-type pull -->
+  <section class="run" id="run" aria-label="Checkpoints two to four">
+    <div class="run-stage">
+      <div class="track" id="track">
+        <svg class="braid" id="braid" aria-hidden="true"></svg>
+
+        <article class="panel k" id="p2" data-short="MIRROR">
+          <div class="num" aria-hidden="true">02</div>
+          <div class="body">
+            <h2>The Mirror, Not the Magnifying Glass</h2>
+            <div class="art" aria-hidden="true">
+              <div class="mirror">
+                <div class="m-top">Not a gap.</div>
+                <div class="m-rule"></div>
+                <div class="m-refl"><span id="ma">Not a gap.</span><span id="mb">A compass.</span></div>
+              </div>
+            </div>
+            <p class="quote">“Not a gap. A compass.”</p>
+            <p class="snippet">I didn’t see someone who needs fixing. I saw someone operating at a frequency most people never find.</p>
+            <button class="tag" type="button" data-tag="#CalibrateHere" aria-label="Copy hashtag CalibrateHere">#CalibrateHere <i>COPY</i></button>
+          </div>
+          <div class="emo-cell"><span class="emo" role="img" aria-label="Mirror">🪞</span></div>
+        </article>
+
+        <article class="panel y" id="p3" data-short="EXCHANGE">
+          <div class="num" aria-hidden="true">03</div>
+          <div class="body">
+            <h2>The Exchange of Value</h2>
+            <div class="art" aria-hidden="true">
+              <div class="flow"><div class="f f1" id="f1">Give →</div><div class="f f2" id="f2">← Take</div></div>
+            </div>
+            <p class="quote">“Resource flowing both ways.”</p>
+            <p class="snippet">You called it “just being a good person.” I call it leadership. Now I want to put actual weight on your rope.</p>
+            <button class="tag" type="button" data-tag="#WeightOnTheRope" aria-label="Copy hashtag WeightOnTheRope">#WeightOnTheRope <i>COPY</i></button>
+          </div>
+          <div class="emo-cell"><span class="emo" role="img" aria-label="Handshake">🤝</span></div>
+        </article>
+
+        <article class="panel k" id="p4" data-short="ROI">
+          <div class="num" aria-hidden="true">04</div>
+          <div class="body">
+            <h2>The Better ROI</h2>
+            <div class="art" aria-hidden="true">
+              <div class="count" id="count">1.0×</div>
+              <div class="count-lbl">1% A DAY. 365 DAYS.</div>
+              <div class="stamp stamp4" id="stamp4">BREAKING:<br>GROWTH</div>
+            </div>
+            <p class="quote">“Invest in what compounds.”</p>
+            <p class="snippet">These aren’t side projects; they’re the foundations. Don’t get distracted by base camp comforts.</p>
+            <button class="tag" type="button" data-tag="#Compounding" aria-label="Copy hashtag Compounding">#Compounding <i>COPY</i></button>
+          </div>
+          <div class="emo-cell"><span class="emo" role="img" aria-label="Chart increasing">📈</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 · HERO 3D · Paper Climbers -->
+  <section class="chapter c5" id="p5" data-short="CHALLENGE" data-scene="climb">
+    <div class="stage">
+      <div class="hd t-k"><div class="big" aria-hidden="true">05</div><h2>The Mutual Challenge</h2></div>
+      <div class="cap t-k">
+        <div class="cap-txt">
+          <p class="quote">“Depth over speed. Visibility over humility.”</p>
+          <p class="snippet">A pact, not a lecture. When I start optimizing outcomes instead of souls, call me out.</p>
+          <button class="tag" type="button" data-tag="#HoldTheLine" aria-label="Copy hashtag HoldTheLine">#HoldTheLine <i>COPY</i></button>
+        </div>
+        <div class="emo-cell"><span class="emo" role="img" aria-label="Crossed swords">⚔️</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 · silent and static -->
+  <section class="calm" id="p6" data-short="CLIMB">
+    <div class="meta">
+      <span class="n" aria-hidden="true">06</span>
+      <h2>The Confidence of the Climb</h2>
+      <p class="quote-s">“You have the map. I have the compass.”</p>
+      <p>Neither of us has this figured out. But together? We see the route more clearly.</p>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <button class="tag" type="button" data-tag="#MapAndCompass" aria-label="Copy hashtag MapAndCompass">#MapAndCompass <i>COPY</i></button>
+        <span class="em" role="img" aria-label="Compass">🧭</span>
+      </div>
+    </div>
+    <div class="yl" aria-hidden="true"></div>
+    <svg class="compass" viewBox="-100 -100 200 200" role="img" aria-label="Compass needle pointing up and to the right">
+      <circle r="92" fill="#F2EEE3" stroke="#0A0A0A" stroke-width="6"/>
+      <g stroke="#0A0A0A" stroke-width="3">
+        <line y1="-92" y2="-72"/><line y1="-92" y2="-80" transform="rotate(30)"/><line y1="-92" y2="-80" transform="rotate(60)"/>
+        <line y1="-92" y2="-72" transform="rotate(90)"/><line y1="-92" y2="-80" transform="rotate(120)"/><line y1="-92" y2="-80" transform="rotate(150)"/>
+        <line y1="-92" y2="-72" transform="rotate(180)"/><line y1="-92" y2="-80" transform="rotate(210)"/><line y1="-92" y2="-80" transform="rotate(240)"/>
+        <line y1="-92" y2="-72" transform="rotate(270)"/><line y1="-92" y2="-80" transform="rotate(300)"/><line y1="-92" y2="-80" transform="rotate(330)"/>
+      </g>
+      <g transform="rotate(38)">
+        <path d="M0,-68 L11,0 L-11,0Z" fill="#0A0A0A"/>
+        <path d="M0,68 L11,0 L-11,0Z" fill="#F2EEE3" stroke="#0A0A0A" stroke-width="4"/>
+      </g>
+      <circle r="7" fill="#FFD400" stroke="#0A0A0A" stroke-width="3"/>
+    </svg>
+  </section>
+
+  <!-- 07 · HERO 3D · The Forge -->
+  <section class="chapter c7" id="p7" data-short="COVENANT" data-scene="forge">
+    <div class="stage">
+      <div class="flash" id="flash"></div>
+      <div class="hd t-y"><div class="big" aria-hidden="true">07</div><h2>The Covenant</h2></div>
+      <div class="stamp s-hd t-y" aria-hidden="true" style="transform:rotate(-8deg)">CHECKPOINT</div>
+      <div class="cap t-y">
+        <div class="cap-txt">
+          <p class="quote">“Iron on iron.”</p>
+          <p class="snippet">I’m not here to fix you, and I don’t need you to rescue me. I’m here to climb with you.</p>
+          <button class="tag" type="button" data-tag="#IronOnIron" aria-label="Copy hashtag IronOnIron">#IronOnIron <i>COPY</i></button>
+        </div>
+        <div class="emo-cell"><span class="emo" role="img" aria-label="Anchor">⚓</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <h2>Bring your full self to this ascent. I’m bringing mine.</h2>
+  <div class="foot-row">
+    <svg id="barcode" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-label="Barcode"></svg>
+    <p class="sig">—Mark</p>
+    <button class="top" type="button" id="toTop">BACK TO BASE CAMP ↑</button>
+  </div>
+  <div class="ticker" aria-hidden="true"><div class="tick" id="tick"></div></div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function(){
+'use strict';
+/*==HELPERS==*/
+const PAP=0xF2EEE3, YEL=0xFFD400, BLK=0x0A0A0A;
+const FONT='Anton, Impact, "Arial Narrow", sans-serif';
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
+const eOut=t=>1-Math.pow(1-t,3);
+function rng(seed){let s=seed>>>0;return function(){s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+/*==/HELPERS==*/
+
+/*==SCENES==*/
+/* Sample type from a 2D canvas into a grid of voxels (brutalist pixel letters). */
+function voxelText(lines,o){
+  const step=o.step||8, base=document.createElement('canvas').getContext('2d');
+  base.font='400 100px '+FONT;
+  const meta=[];
+  lines.forEach(function(text,li){
+    const w100=base.measureText(text).width||100;
+    const fs=o.justify?100*(o.cols*step)/w100:o.fs;
+    const wpx=Math.ceil(o.justify?o.cols*step:(w100*fs/100));
+    const cols=Math.ceil(wpx/step), hpx=Math.ceil(fs*1.2);
+    const c=document.createElement('canvas'); c.width=wpx+2; c.height=hpx;
+    const g=c.getContext('2d'); g.font='400 '+fs+'px '+FONT; g.fillStyle='#000'; g.textBaseline='alphabetic'; g.fillText(text,0,fs*.98);
+    const data=g.getImageData(0,0,c.width,c.height).data;
+    const words=text.split(' '), ends=[]; let acc='';
+    words.forEach(function(wd){acc=acc?acc+' '+wd:wd; ends.push(g.measureText(acc).width);});
+    const rows=Math.ceil(hpx/step), cells=[]; let r0=1e9, r1=-1;
+    for(let r=0;r<rows;r++) for(let ci=0;ci<cols;ci++){
+      const px=Math.min(c.width-1,ci*step+(step>>1)), py=Math.min(hpx-1,r*step+(step>>1));
+      if(data[(py*c.width+px)*4+3]>110){
+        let wi=0; while(wi<ends.length-1&&px>ends[wi]) wi++;
+        cells.push({ci:ci,r:r,wi:wi}); if(r<r0) r0=r; if(r>r1) r1=r;
+      }
+    }
+    if(!cells.length){r0=0;r1=0;}
+    meta.push({cells:cells,cols:cols,r0:r0,r1:r1,li:li});
+  });
+  const gap=o.gap||3; let total=0;
+  meta.forEach(function(m,i){total+=(m.r1-m.r0+1)+(i?gap:0);});
+  const maxCols=Math.max.apply(null,meta.map(function(m){return m.cols;}));
+  const pts=[]; let cur=0;
+  meta.forEach(function(m,i){
+    if(i) cur+=gap;
+    m.cells.forEach(function(k){
+      pts.push({x:(k.ci-m.cols/2+.5)*o.cell, y:((total/2)-(cur+(k.r-m.r0))-.5)*o.cell, line:m.li, w:lines.length>1?m.li:k.wi});
+    });
+    cur+=(m.r1-m.r0+1);
+  });
+  return {pts:pts,width:maxCols*o.cell,height:total*o.cell};
+}
+/* Voxel = front face in `front`, extruded sides in `side`, so angled views read as printed block type. */
+function voxelMesh(count,cell,depth,front,side){
+  const g=new THREE.BoxGeometry(cell*.94,cell*.94,depth);
+  const col=new Float32Array(24*3), f=new THREE.Color(front), s=new THREE.Color(side);
+  for(let face=0;face<6;face++){ const c=face>=4?f:s; for(let v=0;v<4;v++){const i=(face*4+v)*3; col[i]=c.r; col[i+1]=c.g; col[i+2]=c.b;} }
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const m=new THREE.InstancedMesh(g,new THREE.MeshBasicMaterial({vertexColors:true}),Math.max(1,count));
+  m.frustumCulled=false;
+  return m;
+}
+function textTexture(lines,color){
+  const W=2048, lh=420, c=document.createElement('canvas'); c.width=W; c.height=lh*lines.length+40;
+  const g=c.getContext('2d'); g.fillStyle=color; g.textAlign='center'; g.textBaseline='middle';
+  lines.forEach(function(t,i){
+    let fs=380; g.font='400 '+fs+'px '+FONT;
+    const w=g.measureText(t).width; if(w>W-60){fs=fs*(W-60)/w; g.font='400 '+fs+'px '+FONT;}
+    g.fillText(t,W/2,20+lh*i+lh/2);
+  });
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=4; tex.needsUpdate=true; tex.userData={aspect:c.width/c.height};
+  return tex;
+}
+
+/* ═════ 01 · THE QUIET SUMMIT — layered paper-cut ridges, fog, a yellow sunrise line ═════ */
+function makeSummit(){
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(PAP); scene.fog=new THREE.Fog(PAP,8,64);
+  const cam=new THREE.PerspectiveCamera(45,1,.1,300);
+  const r=rng(11);
+  for(let i=0;i<7;i++){
+    const W=70+i*16, z=-4-i*7.5, hb=.9+i*1.15, sh=new THREE.Shape();
+    sh.moveTo(-W/2,-18);
+    for(let x=-W/2;x<=W/2+.01;x+=1.1+r()*.6){
+      sh.lineTo(x,hb+Math.sin(x*.19+i*2.3)*1.5+Math.sin(x*.47+i*.7)*.8+(r()-.5)*1.6);
+    }
+    sh.lineTo(W/2,-18); sh.closePath();
+    const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:BLK}));
+    m.position.z=z; scene.add(m);
+  }
+  const sun=new THREE.Mesh(new THREE.CircleGeometry(10,48),new THREE.MeshBasicMaterial({color:YEL,fog:false}));
+  sun.position.set(0,-3,-70); scene.add(sun);
+  const lg=new THREE.PlaneGeometry(400,.5); lg.translate(200,0,0);
+  const line=new THREE.Mesh(lg,new THREE.MeshBasicMaterial({color:YEL,fog:false}));
+  line.position.set(-200,7,-69.5); line.scale.x=.0001; scene.add(line);
+  let tex1=null, tex2=null;
+  const tm=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));
+  tm.position.set(0,9,-19); scene.add(tm);
+  function setText(portrait){
+    if(!tex1){tex1=textTexture(['SAME MOUNTAIN'],'#0A0A0A'); tex2=textTexture(['SAME','MOUNTAIN'],'#0A0A0A');}
+    const tx=portrait?tex2:tex1, w=portrait?34:58;
+    tm.material.map=tx; tm.material.needsUpdate=true;
+    tm.scale.set(w,w/tx.userData.aspect,1);
+  }
+  return {
+    scene:scene, cam:cam,
+    resize:function(w,h){
+      cam.aspect=w/h; cam.setViewOffset(w,h,0,Math.round(h*.06),w,h); cam.updateProjectionMatrix();
+      setText(w/h<.85);
+    },
+    update:function(p,t){
+      const z=lerp(9,-40,p), y=lerp(2.2,9.5,p);
+      cam.position.set(Math.sin(t*.25)*.3,y+Math.sin(t*.4)*.1,z);
+      cam.lookAt(0,y*.55+1,z-18);
+      sun.position.y=lerp(-3,13,sstep(.25,.85,p));
+      line.scale.x=Math.max(.0001,sstep(.78,.97,p));
+      const w=sstep(.82,1,p); scene.fog.near=lerp(8,-6,w); scene.fog.far=lerp(64,30,w);
+    }
+  };
+}
+
+/* ═════ 05 · PAPER CLIMBERS — a headline cliff, two faceless figures, one rope, a role swap ═════ */
+function makeClimb(){
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(YEL);
+  const cam=new THREE.PerspectiveCamera(40,1,.1,300);
+  const cell=.17, depth=.5;
+  const vt=voxelText(['HOLD','THE LINE'],{step:8,justify:true,cols:96,cell:cell,gap:3});
+  const wall=voxelMesh(vt.pts.length,cell,depth,BLK,PAP), dummy=new THREE.Object3D();
+  vt.pts.forEach(function(q,i){dummy.position.set(q.x,q.y,0); dummy.scale.set(1,1,1); dummy.updateMatrix(); wall.setMatrixAt(i,dummy.matrix);});
+  wall.instanceMatrix.needsUpdate=true; scene.add(wall);
+  const WW=vt.width, HH=vt.height, y0=-HH/2, y1=HH/2;
+  const ground=new THREE.Mesh(new THREE.BoxGeometry(WW+14,1.2,5),new THREE.MeshBasicMaterial({color:BLK}));
+  ground.position.set(0,y0-.6,1.5);
+  ground.add(new THREE.LineSegments(new THREE.EdgesGeometry(ground.geometry),new THREE.LineBasicMaterial({color:PAP})));
+  scene.add(ground);
+
+  const S=.9, edgeMat=new THREE.LineBasicMaterial({color:BLK});
+  const paperM=new THREE.MeshBasicMaterial({color:PAP}), blkM=new THREE.MeshBasicMaterial({color:BLK});
+  function part(geo,mat,x,y,z){const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat)); return m;}
+  function limb(w,h,x,y){const piv=new THREE.Group(); piv.position.set(x,y,0); piv.add(part(new THREE.BoxGeometry(w,h,w),paperM,0,-h/2,0)); return piv;}
+  function figure(){
+    const g=new THREE.Group();
+    const armL=limb(.16,.62,-.37,.35), armR=limb(.16,.62,.37,.35), legL=limb(.2,.7,-.15,-.4), legR=limb(.2,.7,.15,-.4);
+    g.add(part(new THREE.BoxGeometry(.55,.8,.28),paperM,0,0,0), part(new THREE.BoxGeometry(.58,.14,.3),blkM,0,-.3,0),
+          part(new THREE.IcosahedronGeometry(.26,0),paperM,0,.62,0), armL,armR,legL,legR);
+    g.scale.setScalar(S); g.userData={armL:armL,armR:armR,legL:legL,legR:legR};
+    scene.add(g); return g;
+  }
+  const A=figure(), B=figure();
+  function pose(f,mode,ph){
+    const u=f.userData, s=Math.sin;
+    if(mode==='climb'){u.armL.rotation.z=-(2.7+s(ph)*.35); u.armR.rotation.z=2.7+s(ph+Math.PI)*.35; u.legL.rotation.z=-.15-s(ph+Math.PI)*.4; u.legR.rotation.z=.15+s(ph)*.4;}
+    else if(mode==='belay'){u.armL.rotation.z=-2.2; u.armR.rotation.z=2.2; u.legL.rotation.z=-.14; u.legR.rotation.z=.14;}
+    else {u.armL.rotation.z=-(2.9+s(ph)*.25); u.armR.rotation.z=2.9+s(ph+1)*.25; u.legL.rotation.z=-.1; u.legR.rotation.z=.1;}
+  }
+  const path=new THREE.CatmullRomCurve3([[-.42,0],[-.34,.2],[-.12,.38],[.06,.55],[.2,.8],[.36,1]].map(function(q){
+    return new THREE.Vector3(q[0]*WW,lerp(y0,y1,q[1])+.05,.62);
+  }));
+  const NR=30, rope=new THREE.InstancedMesh(new THREE.BoxGeometry(.1,.1,1),new THREE.MeshBasicMaterial({color:0xffffff}),NR);
+  for(let i=0;i<NR;i++) rope.setColorAt(i,new THREE.Color(i%2?PAP:BLK));
+  rope.instanceColor.needsUpdate=true; rope.frustumCulled=false; scene.add(rope);
+  const ra=new THREE.Vector3(), rb=new THREE.Vector3(), rm=new THREE.Vector3(), pa=new THREE.Vector3(), pb=new THREE.Vector3(), rd=new THREE.Object3D();
+  function quad(t,out){const k=1-t; out.set(k*k*ra.x+2*k*t*rm.x+t*t*rb.x, k*k*ra.y+2*k*t*rm.y+t*t*rb.y, k*k*ra.z+2*k*t*rm.z+t*t*rb.z); return out;}
+  function updateRope(a,b){
+    ra.copy(a); rb.copy(b); const d=ra.distanceTo(rb);
+    rm.addVectors(ra,rb).multiplyScalar(.5); rm.y-=clamp(4-d*.25,.2,3); rm.z+=.35;
+    for(let i=0;i<NR;i++){
+      quad(i/NR,pa); quad((i+1)/NR,pb);
+      rd.position.addVectors(pa,pb).multiplyScalar(.5); rd.lookAt(pb);
+      rd.scale.set(1,1,pa.distanceTo(pb)*1.15+.001); rd.updateMatrix(); rope.setMatrixAt(i,rd.matrix);
+    }
+    rope.instanceMatrix.needsUpdate=true;
+  }
+  const ease=function(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;};
+  const center=new THREE.Vector3(0,0,.3), tgt=new THREE.Vector3(), pA=new THREE.Vector3(), pB=new THREE.Vector3(), hA=new THREE.Vector3(), hB=new THREE.Vector3();
+  let dist=30;
+  return {
+    scene:scene, cam:cam,
+    resize:function(w,h){
+      const asp=w/h, tn=Math.tan(20*Math.PI/180);
+      dist=Math.max(((WW+7)/2)/(tn*asp),((HH+7)/2)/tn);
+      cam.aspect=asp; cam.setViewOffset(w,h,0,Math.round(h*.08),w,h); cam.updateProjectionMatrix();
+    },
+    update:function(p,t){
+      const uA=ease(clamp(p/.48)), uBraw=ease(clamp((p-.52)/.46))*.9;
+      path.getPoint(uA,pA); path.getPoint(uBraw,pB);
+      const off=1-sstep(0,.15,uBraw);
+      A.position.set(pA.x,pA.y+1.0*S,pA.z);
+      B.position.set(pB.x+2.4*off,pB.y+1.0*S,pB.z+.8*off);
+      const done=p>.97;
+      pose(A,done?'cheer':(p<.48&&p>.01?'climb':'belay'),done?t*3:uA*60);
+      pose(B,done?'cheer':(p>.52?'climb':'belay'),done?t*3+1:uBraw*60);
+      hA.set(A.position.x,A.position.y-.3*S,A.position.z+.2); hB.set(B.position.x,B.position.y-.3*S,B.position.z+.2);
+      updateRope(hA,hB);
+      const act=p<.5?A.position:B.position;
+      tgt.copy(center).lerp(act,.45);
+      const th=lerp(-.5,.55,p);
+      cam.position.set(tgt.x+Math.sin(th)*dist,tgt.y+1.4+p*.8,tgt.z+Math.cos(th)*dist);
+      cam.lookAt(tgt);
+    }
+  };
+}
+
+/* ═════ 07 · THE FORGE — two bars heat and strike three times; each hit lands a word ═════ */
+function makeForge(portrait){
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(BLK);
+  const cam=new THREE.PerspectiveCamera(40,1,.1,300);
+  const cell=portrait?.19:.17, depth=.6;
+  const vt=portrait?voxelText(['IRON','ON','IRON'],{step:8,justify:false,fs:230,cell:cell,gap:3})
+                   :voxelText(['IRON ON IRON'],{step:8,justify:true,cols:150,cell:cell,gap:3});
+  const words=voxelMesh(vt.pts.length,cell,depth,YEL,PAP); scene.add(words);
+  const r=rng(5), V=vt.pts.map(function(q){return {tx:q.x,ty:q.y,sx:(r()-.5)*1.2,sy:(r()-.5)*1.2,sz:.5+r()*1.2,w:Math.min(2,q.w),a:(r()-.5)*5};});
+  const STR=[.46,.66,.84];
+  function bar(){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(5,.72,.72),new THREE.MeshBasicMaterial({color:0x1c1c1c}));
+    m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),new THREE.LineBasicMaterial({color:PAP})));
+    scene.add(m); return m;
+  }
+  const L=bar(), R=bar(), cold=new THREE.Color(0x1c1c1c), hot=new THREE.Color(YEL);
+  const NS=90, sparks=new THREE.InstancedMesh(new THREE.BoxGeometry(.16,.16,.03),new THREE.MeshBasicMaterial({color:0xffffff}),NS*3);
+  const sr=rng(9), SP=[];
+  for(let i=0;i<NS*3;i++){ SP.push({a:sr()*Math.PI*2,v:4+sr()*12,s:.5+sr()*1.2,z:(sr()-.5),k:Math.floor(i/NS),r:sr()*6}); sparks.setColorAt(i,new THREE.Color(sr()>.4?YEL:PAP)); }
+  sparks.instanceColor.needsUpdate=true; sparks.frustumCulled=false; scene.add(sparks);
+  const rings=STR.map(function(s,i){
+    const m=new THREE.Mesh(new THREE.RingGeometry(.9,1,64),new THREE.MeshBasicMaterial({color:i%2?PAP:YEL,transparent:true,side:THREE.DoubleSide}));
+    m.position.set(0,0,.8); m.visible=false; scene.add(m); return m;
+  });
+  const d=new THREE.Object3D(), tcol=new THREE.Color();
+  let dist=30, prev=0, kick=0;
+  const api={scene:scene,cam:cam,flash:0,
+    resize:function(w,h){
+      const asp=w/h, tn=Math.tan(20*Math.PI/180);
+      dist=Math.max(((vt.width+(portrait?3:5))/2)/(tn*asp),((vt.height+4)/2)/tn);
+      cam.aspect=asp; cam.setViewOffset(w,h,0,Math.round(h*.06),w,h); cam.updateProjectionMatrix();
+    },
+    update:function(p,t,dt){
+      dt=dt||.016;
+      STR.forEach(function(s){ if((prev<s&&p>=s)||(prev>=s&&p<s)) kick=1; });
+      prev=p; kick*=Math.exp(-dt*5); api.flash=kick;
+      let dd=1; STR.forEach(function(s){dd=Math.min(dd,Math.abs(p-s)/.09);});
+      const gap=Math.pow(clamp(dd),1.4)*3.2, away=sstep(.9,1,p);
+      tcol.lerpColors(cold,hot,sstep(.1,.5,p)); L.material.color.copy(tcol); R.material.color.copy(tcol);
+      L.position.set(-(2.5+gap/2)-away*8,-away*7,0); R.position.set(2.5+gap/2+away*8,-away*7,0);
+      L.rotation.z=.14*(gap/3.2); R.rotation.z=-.14*(gap/3.2);
+      for(let i=0;i<V.length;i++){
+        const v=V[i], e=eOut(clamp((p-STR[v.w])/.08));
+        if(e<=0){d.scale.set(0,0,0);}
+        else{
+          d.position.set(lerp(v.sx,v.tx,e),lerp(v.sy,v.ty,e)+(1-e)*v.a,lerp(.6,-3,e)+(1-e)*v.sz);
+          d.scale.setScalar(lerp(.35,1,e));
+        }
+        d.updateMatrix(); words.setMatrixAt(i,d.matrix);
+      }
+      words.instanceMatrix.needsUpdate=true;
+      d.scale.set(1,1,1);
+      for(let i=0;i<SP.length;i++){
+        const sp=SP[i], tau=(p-STR[sp.k])*9;
+        if(tau<=0||tau>1.4){d.scale.set(0,0,0); d.position.set(0,0,0);}
+        else{
+          d.position.set(Math.cos(sp.a)*sp.v*tau,Math.sin(sp.a)*sp.v*tau-4.5*tau*tau,.8+sp.z*sp.v*tau*.3);
+          d.rotation.set(0,0,sp.r*tau); d.scale.setScalar(sp.s*(1-tau/1.4)*(portrait?1.2:1));
+        }
+        d.updateMatrix(); sparks.setMatrixAt(i,d.matrix);
+      }
+      d.rotation.set(0,0,0);
+      sparks.instanceMatrix.needsUpdate=true;
+      rings.forEach(function(m,i){
+        const tau=(p-STR[i])/.12;
+        if(tau<0||tau>1){m.visible=false;} else {m.visible=true; m.scale.setScalar(1+tau*(portrait?14:22)); m.material.opacity=1-tau;}
+      });
+      const zf=lerp(1.08,.8,sstep(0,.85,p))+.28*sstep(.88,1,p);
+      const sh=kick*.55;
+      cam.position.set((Math.sin(t*61)+Math.sin(t*37+1))*.5*sh,(Math.cos(t*53)+Math.sin(t*29))*.5*sh,dist*zf);
+      cam.lookAt(0,0,0);
+    }
+  };
+  return api;
+}
+/*==/SCENES==*/
+
+/* ───────────────── Page code ───────────────── */
+const $ =function(s,r){return (r||document).querySelector(s);};
+const $$=function(s,r){return Array.from((r||document).querySelectorAll(s));};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine=matchMedia('(hover: hover) and (pointer: fine)').matches;
+const hasGsap=!!window.gsap;
+if(reduce) document.documentElement.classList.add('reduce');
+
+/* 1 · Split the masthead into letters */
+$$('[data-split]').forEach(function(el){
+  const t=el.textContent.trim(); el.textContent='';
+  Array.from(t).forEach(function(c){const s=document.createElement('span'); s.className='ch'; s.setAttribute('aria-hidden','true'); s.textContent=c; el.appendChild(s);});
+});
+
+/* 2 · Elements */
+const c1=$('#p1'), c5=$('#p5'), c6=$('#p6'), c7=$('#p7'), run=$('#run'), track=$('#track'), braid=$('#braid');
+const panels=$$('.panel'), nums=panels.map(function(p){return $('.num',p);});
+const items=[{el:c1},{panel:0},{panel:1},{panel:2},{el:c5},{el:c6},{el:c7}];
+const shorts=[c1,panels[0],panels[1],panels[2],c5,c6,c7].map(function(e){return e.dataset.short;});
+const chapters=[{el:c1,key:'summit',ps:0},{el:c5,key:'climb',ps:0},{el:c7,key:'forge',ps:0}];
+chapters.forEach(function(c){c.hd=$('.hd',c.el); c.cap=$('.cap',c.el); c.rh=-1; c.rc=-1;});
+let vw=innerWidth, vh=innerHeight, glx=null, runPs=0;
+
+/* 3 · Meter */
+const ticks=$('#ticks');
+shorts.forEach(function(s,i){
+  const b=document.createElement('button'); b.type='button'; b.className='tk';
+  b.setAttribute('aria-label','Go to checkpoint '+(i+1)+': '+s);
+  b.innerHTML='<b>'+String(i+1).padStart(2,'0')+'</b><span>'+s+'</span>';
+  b.addEventListener('click',function(){goto(i);});
+  ticks.appendChild(b);
+});
+const fill=document.createElement('i'); fill.className='fill'; ticks.appendChild(fill);
+const tks=$$('.tk'), cpEl=$('#cp'), pctEl=$('#pct');
+function goto(i){
+  const it=items[i], beh=reduce?'auto':'smooth';
+  if(it.el){it.el.scrollIntoView({behavior:beh,block:'start'});}
+  else if(reduce){panels[it.panel].scrollIntoView({behavior:beh,block:'start'});}
+  else{
+    const top=run.getBoundingClientRect().top+scrollY;
+    scrollTo({top:top+(it.panel/2)*(run.offsetHeight-innerHeight),behavior:beh});
+  }
+}
+let active=-2;
+function updateMeter(){
+  const mid=innerHeight*.5, max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+  const p=clamp(scrollY/max);
+  fill.style.width=(p*100).toFixed(2)+'%';
+  pctEl.textContent=String(Math.round(p*100)).padStart(2,'0')+'%';
+  let a=-1;
+  if(c1.getBoundingClientRect().top<mid) a=0;
+  if(reduce){panels.forEach(function(pn,i){if(pn.getBoundingClientRect().top<mid) a=1+i;});}
+  else if(run.getBoundingClientRect().top<mid) a=1+Math.round(clamp(runPs)*2);
+  if(c5.getBoundingClientRect().top<mid) a=4;
+  if(c6.getBoundingClientRect().top<mid) a=5;
+  if(c7.getBoundingClientRect().top<mid) a=6;
+  if(a!==active){
+    active=a;
+    tks.forEach(function(b,k){b.classList.toggle('on',k===a); if(k===a) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current');});
+    cpEl.textContent=String(a+1).padStart(2,'0');
+  }
+}
+
+/* 4 · The braided rope (flat SVG): two strands, striped, tightening to a knot */
+function sstepAbs(a,b,x){return sstep(a,b,x);}
+function buildBraid(svg,w,h,o){
+  svg.setAttribute('viewBox','0 0 '+w+' '+h); svg.setAttribute('width',w); svg.setAttribute('height',h);
+  const p1=[], p2=[];
+  for(let x=0;x<=w;x+=10){
+    let a=o.amp;
+    if(o.knotX!=null) a=o.amp*(.16+.84*sstepAbs(0,1,Math.abs(x-o.knotX)/o.knotW));
+    const ph=x/o.lam*Math.PI*2;
+    p1.push(x.toFixed(1)+','+(o.yc+a*Math.sin(ph)).toFixed(1));
+    p2.push(x.toFixed(1)+','+(o.yc-a*Math.sin(ph)).toFixed(1));
+  }
+  const d1='M'+p1.join('L'), d2='M'+p2.join('L'), sw=o.sw;
+  svg.innerHTML=
+    '<path d="'+d1+'" fill="none" stroke="#0A0A0A" stroke-width="'+sw+'"/>'+
+    '<path class="dash" data-o="0" d="'+d1+'" fill="none" stroke="#FFD400" stroke-width="'+sw+'" stroke-dasharray="'+sw+' '+sw+'"/>'+
+    '<path d="'+d2+'" fill="none" stroke="#0A0A0A" stroke-width="'+sw+'"/>'+
+    '<path class="dash" data-o="'+(sw/2)+'" d="'+d2+'" fill="none" stroke="#F2EEE3" stroke-width="'+sw+'" stroke-dasharray="'+sw+' '+sw+'" stroke-dashoffset="'+(sw/2)+'"/>';
+}
+let dashEls=[];
+function buildRopes(){
+  const sw=clamp(vh*.022,10,20);
+  buildBraid(braid,vw*3,vh,{yc:vh*.9,amp:vh*.04,lam:clamp(vw*.2,140,360),knotX:vw*1.5,knotW:vw*.6,sw:sw});
+  braid.style.width=(vw*3)+'px'; braid.style.height=vh+'px';
+  dashEls=$$('.dash',braid);
+  const slot=$('#slot'), r=slot.getBoundingClientRect();
+  if(r.width>20&&r.height>10){
+    const s2=clamp(r.height*.14,8,22);
+    buildBraid($('#slotsvg'),Math.round(r.width),Math.round(r.height),{yc:r.height/2,amp:r.height*.3,lam:r.height*1.7,sw:s2});
+  }
+}
+
+/* 5 · Flat-run effects: mirror resolves, words pass each other, compounding counts up */
+const elMA=$('#ma'), elMB=$('#mb'), elF1=$('#f1'), elF2=$('#f2'), elCount=$('#count'), elStamp=$('#stamp4');
+function panelFx(i,off){
+  nums[i].style.transform='translate3d('+(-off*vw*.12).toFixed(1)+'px,0,0)';
+  if(i===0){
+    const x=clamp(1-Math.abs(off)*3.2)*100;
+    elMB.style.clipPath='inset(0 '+(100-x).toFixed(1)+'% 0 0)';
+    elMA.style.clipPath='inset(0 0 0 '+x.toFixed(1)+'%)';
+  }else if(i===1){
+    elF1.style.transform='translate3d('+(off*vw*.5).toFixed(1)+'px,0,0)';
+    elF2.style.transform='translate3d('+(-off*vw*.5).toFixed(1)+'px,0,0)';
+  }else{
+    const r=sstep(-.7,-.05,off);
+    elCount.textContent=(1+(37.78-1)*r).toFixed(1)+'×';
+    const s=clamp((off+.12)/.1);
+    elStamp.style.opacity=s>.02?'1':'0';
+    elStamp.style.transform='rotate(-7deg) scale('+lerp(2.8,1,s*s*s).toFixed(3)+')';
+  }
+}
+
+/* 6 · Main loop */
+function setClip(el,r){el.style.clipPath='inset(0 '+((1-r)*100).toFixed(1)+'% 0 0)';}
+let tPrev=0;
+function frame(now){
+  const t=now/1000, dt=reduce?.016:clamp(t-tPrev,.001,.1); tPrev=t;
+  let act=null;
+  chapters.forEach(function(c){
+    const r=c.el.getBoundingClientRect(), span=r.height-vh;
+    const raw=reduce?1:(span>0?clamp(-r.top/span):1);
+    c.ps=reduce?raw:c.ps+(raw-c.ps)*(1-Math.exp(-dt*7));
+    if(r.top<vh&&r.bottom>0&&!act) act=c;
+    const rh=(reduce||!glx)?1:sstep(0,.08,c.ps), rc=(reduce||!glx)?1:sstep(.04,.14,c.ps);
+    if(Math.abs(rh-c.rh)>.002){c.rh=rh; setClip(c.hd,rh);}
+    if(Math.abs(rc-c.rc)>.002){c.rc=rc; setClip(c.cap,rc);}
+  });
+  if(glx){
+    if(act){
+      const sc=glx.scenes[act.key];
+      glx.canvas.style.visibility='visible';
+      sc.update(act.ps,t,dt);
+      glx.renderer.render(sc.scene,sc.cam);
+      if(act.key==='forge') glx.flash.style.opacity=(sc.flash*.85).toFixed(3);
+    }else glx.canvas.style.visibility='hidden';
+  }
+  const rr=run.getBoundingClientRect(), rspan=rr.height-vh;
+  const rawRun=reduce?0:(rspan>0?clamp(-rr.top/rspan):0);
+  runPs=reduce?0:runPs+(rawRun-runPs)*(1-Math.exp(-dt*8));
+  if(reduce){for(let i=0;i<3;i++) panelFx(i,0);}
+  else{
+    track.style.transform='translate3d('+(-runPs*2*vw).toFixed(1)+'px,0,0)';
+    for(let i=0;i<3;i++) panelFx(i,runPs*2-i);
+    const o=runPs*500;
+    for(let i=0;i<dashEls.length;i++) dashEls[i].setAttribute('stroke-dashoffset',(parseFloat(dashEls[i].dataset.o)+o).toFixed(1));
+  }
+  updateMeter();
+}
+
+/* 7 · WebGL boot (after the display font is ready so voxel type samples the real letters) */
+async function initGL(){
+  if(!window.THREE) throw new Error('three missing');
+  try{await Promise.race([document.fonts.load('400 120px Anton'),new Promise(function(r){setTimeout(r,2500);})]);}catch(e){}
+  const canvas=$('#gl');
+  const renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  const g={canvas:canvas,renderer:renderer,flash:$('#flash'),portrait:innerWidth/innerHeight<.85,
+    scenes:{summit:makeSummit(),climb:makeClimb(),forge:null}};
+  g.scenes.forge=makeForge(g.portrait);
+  g.resize=function(w,h){
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+    renderer.setSize(w,h,false);
+    const po=w/h<.85;
+    if(po!==g.portrait){g.portrait=po; g.scenes.forge=makeForge(po);}
+    Object.keys(g.scenes).forEach(function(k){g.scenes[k].resize(w,h);});
+  };
+  g.resize(innerWidth,innerHeight);
+  return g;
+}
+
+function onResize(){
+  vw=innerWidth; vh=innerHeight;
+  if(glx) glx.resize(vw,vh);
+  buildRopes();
+  if(reduce) frame(0);
+}
+addEventListener('resize',onResize);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(onResize);
+addEventListener('load',onResize);
+onResize();
+
+let started=false;
+function start(){
+  if(started) return; started=true;
+  if(reduce){addEventListener('scroll',function(){frame(0);},{passive:true}); frame(0);}
+  else{(function loop(n){frame(n); requestAnimationFrame(loop);})(performance.now());}
+}
+initGL().then(function(g){glx=g; onResize(); start();}).catch(function(){
+  document.documentElement.classList.add('nogl'); glx=null; start();
+});
+
+/* 8 · Intro: one orchestrated moment on the masthead */
+if(hasGsap&&!reduce){
+  const tl=gsap.timeline({defaults:{ease:'power4.out'}});
+  tl.fromTo('.title .ch',{yPercent:115,rotateX:-90,transformOrigin:'50% 100%'},{yPercent:0,rotateX:0,duration:1.05,stagger:.05})
+    .fromTo('#slotsvg',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:1.1,ease:'power3.inOut'},'-=.8')
+    .fromTo('.bar',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:.7,ease:'power3.inOut'},'-=.7')
+    .fromTo('.stamp-mast',{scale:2.8,autoAlpha:0,rotation:-26},{scale:1,autoAlpha:1,rotation:-7,duration:.3,ease:'power4.in'},'-=.15')
+    .fromTo('.stamp-mast',{x:-5},{x:0,duration:.5,ease:'elastic.out(2,.3)'});
+}
+
+/* 9 · Microinteractions (06 stays silent: its own CSS kills transitions) */
+const toastEl=$('#toast'); let tt;
+function toast(msg){toastEl.textContent=msg; toastEl.classList.add('on'); clearTimeout(tt); tt=setTimeout(function(){toastEl.classList.remove('on');},1700);}
+async function copyText(txt){
+  try{await navigator.clipboard.writeText(txt); return true;}
+  catch(e){
+    try{const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok;}
+    catch(e2){return false;}
+  }
+}
+$$('.tag').forEach(function(chip){
+  chip.addEventListener('click',async function(){
+    const ok=await copyText(chip.dataset.tag);
+    toast(ok?'COPIED '+chip.dataset.tag:'SELECT + COPY '+chip.dataset.tag);
+    if(hasGsap&&!reduce&&!chip.closest('.calm')) gsap.fromTo(chip,{scale:.9},{scale:1,duration:.5,ease:'elastic.out(1.4,.4)'});
+  });
+});
+if(fine&&hasGsap&&!reduce){
+  $$('.emo-cell').forEach(function(cell){
+    const emo=$('.emo',cell);
+    cell.addEventListener('pointerenter',function(){gsap.fromTo(emo,{scale:.86},{scale:1,duration:.7,ease:'elastic.out(1.2,.35)'});});
+    cell.addEventListener('pointermove',function(e){
+      const r=cell.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      gsap.to(emo,{rotationY:x*50,rotationX:-y*50,duration:.35,ease:'power3.out',overwrite:'auto'});
+    });
+    cell.addEventListener('pointerleave',function(){gsap.to(emo,{rotationX:0,rotationY:0,duration:.8,ease:'elastic.out(1,.4)'});});
+  });
+}
+$('#toTop').addEventListener('click',function(){scrollTo({top:0,behavior:reduce?'auto':'smooth'});});
+
+/* 10 · Footer: barcode + ticker-tape */
+(function(){
+  const svg=$('#barcode'); let x=0, seed=7, out='';
+  const rnd=function(){seed=(seed*16807)%2147483647; return seed/2147483647;};
+  while(x<300){const w=1+Math.floor(rnd()*4); if(rnd()>.38) out+='<rect x="'+x+'" y="0" width="'+w+'" height="64" fill="#0A0A0A"/>'; x+=w+1;}
+  svg.setAttribute('viewBox','0 0 '+x+' 64'); svg.innerHTML=out;
+  const unit='<span>See you at the next checkpoint — Mark</span><i>▲</i>', half=new Array(5).join(unit);
+  $('#tick').innerHTML=half+half;
+})();
+})();
+</script>
+</body>
+</html>
