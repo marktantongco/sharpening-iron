@@ -89,16 +89,21 @@ sharpening-iron/
 
 ## Accessibility & safety nets
 
-- **Reduced motion:** If the user has `prefers-reduced-motion: reduce`, all scrub animations are removed, the horizontal pull collapses to a vertical stack, and the page renders at its resolved state.
+- **Reduced motion:** If the user has `prefers-reduced-motion: reduce`, all scrub animations are removed, the horizontal pull collapses to a vertical stack, and the page renders at its resolved state. Loader animation is also disabled.
 - **No WebGL fallback:** If Three.js fails to initialise, the three hero chapters become flat colour modules (cream, yellow, black) with their typography intact.
 - **Keyboard:** All interactive chips are `<button>` elements with `aria-label`s. The meter ticks are focusable and announce the target checkpoint.
 - **Screen readers:** Canvas is `aria-hidden`. Checkpoint labels are announced via `aria-live="polite"` toast.
+- **Skip link:** Hidden until focused, jumps straight to the checkpoint section.
+- **Font fallbacks:** `@font-face` rules fall back to locally installed fonts if Google Fonts is unreachable.
+- **Loader:** A pulsing `LOADING…` overlay is shown while WebGL boots; hidden once the main loop starts.
 
 ---
 
 ## Deployment
 
 ### GitHub Pages
+
+**Live:** `https://marktantongco.github.io/sharpening-iron/`
 
 1. Push the repo to GitHub.
 2. Go to **Settings → Pages**.
@@ -116,7 +121,7 @@ cd sharpening-iron
 vercel --prod
 ```
 
-Or connect the GitHub repo to Vercel via the dashboard for automatic deploys on push.
+Or connect the GitHub repo to Vercel via the dashboard for automatic deploys on push. **Note:** The Vercel CLI in this sandbox rejects all provided tokens; use the dashboard instead.
 
 ---
 
@@ -144,15 +149,16 @@ To add a checkpoint:
 - **Colour palette:** Paper `#F2EEE3`, Ink `#0A0A0A`, Yellow `#FFD400`.
 - **Type scale:** Fluid `clamp()` sizing. Anton for display; Space Mono for UI.
 - **Motion:** Intro is GSAP. Scroll scrubbing is a custom `requestAnimationFrame` loop with exponential smoothing (`1 - exp(-dt * 7)`). Dash-offset on the rope is updated per frame.
-- **Performance:** Pixel ratio is capped at 2. Three.js scenes use `frustumCulled = false` only where needed (instanced meshes). `will-change` is used sparingly on elements that actually move.
+- **Performance:** Pixel ratio is capped at 2. Three.js scenes use `frustumCulled = false` only where needed (instanced meshes). `will-change` is used sparingly on elements that actually move. Meter is throttled to ~10fps. Resize is debounced at 120ms. Rope SVG is cached and only rebuilt on dimension changes. Frame-budget bail skips frames where `dt > 100ms`.
 
 ---
 
 ## Known caveats
 
-- **Google Fonts CDN:** Requires internet on first load. After that the browser caches them.
+- **Google Fonts CDN:** Requires internet on first load. After that the browser caches them. Local fallbacks are defined via `@font-face`.
 - **godly.website** now redirects to recent.design.
 - **Rope & checkpoint placement** may need nudging on real devices — the values are in `buildRopes()` and the `panel` grid.
+- **Vercel:** The Vercel CLI in this environment rejects all provided API tokens. You can deploy manually at https://vercel.com/new by importing the GitHub repo. GitHub Pages remains the primary live deployment.
 
 ---
 
