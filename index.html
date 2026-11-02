@@ -15,10 +15,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="script" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
 <link rel="preload" as="script" href="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400..900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* Offline fallback: if Google Fonts is unreachable, local copies take over. */
-@font-face{font-family:'Anton';src:local('Anton'),local('Impact'),local('Arial Narrow');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Bodoni Moda';src:local('Bodoni Moda'),local('Didot'),local('Playfair Display');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Space Mono';src:local('Space Mono'),local('Menlo'),local('Consolas');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Space Mono';src:local('Space Mono'),local('Menlo'),local('Consolas');font-weight:700;font-style:normal;font-display:swap}
 :root{
@@ -51,7 +51,7 @@
   --calm-font-size:.8rem;
   --calm-em-size:1.4rem;
   --calm-row-gap:1rem;
-  --anton:'Anton',Impact,'Arial Narrow',sans-serif;
+  --anton:'Bodoni Moda',Didot,'Playfair Display',serif;
   --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -427,7 +427,7 @@ html.nogl .flash{display:none}
 'use strict';
 /*==HELPERS==*/
 const PAP=0xF2EEE3, YEL=0xFFD400, BLK=0x0A0A0A;
-const FONT='Anton, Impact, "Arial Narrow", sans-serif';
+const FONT='Bodoni Moda, Didot, "Playfair Display", serif';
 const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
@@ -858,6 +858,15 @@ function setupScrollMeter(){
   checkpointTrigger(c5, 4);
   checkpointTrigger(c6, 5);
   checkpointTrigger(c7, 6);
+
+  /* Kinetic type: animate font weight on scroll for chapter headlines */
+  if(!reduce){
+    $$('.hd h2, .panel h2').forEach(function(h2){
+      gsap.fromTo(h2,{fontVariationSettings:'"wght" 400'},{fontVariationSettings:'"wght" 900',duration:1,ease:'power2.out',
+        scrollTrigger:{trigger:h2,start:'top 85%',end:'top 40%',scrub:1}
+      });
+    });
+  }
 }
 
 /* 4 · The braided rope (flat SVG): two strands, striped, tightening to a knot */
@@ -947,7 +956,7 @@ function frame(now){
 /* 7 · WebGL boot (after the display font is ready so voxel type samples the real letters) */
 async function initGL(){
   if(!window.THREE) throw new Error('three missing');
-  try{await Promise.race([document.fonts.load('400 120px Anton'),new Promise(function(r){setTimeout(r,2500);})]);}catch(e){}
+  try{await Promise.race([document.fonts.load('400 120px Bodoni Moda'),new Promise(function(r){setTimeout(r,2500);})]);}catch(e){}
   const canvas=$('#gl');
   let renderer;
   try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'}); }
@@ -997,7 +1006,7 @@ initGL().then(function(g){glx=g; onResize(); start();}).catch(function(){
 /* 8 · Intro: one orchestrated moment on the masthead */
 if(hasGsap&&!reduce){
   const tl=gsap.timeline({defaults:{ease:'power4.out'}});
-  tl.fromTo('.title .ch',{yPercent:115,rotateX:-90,transformOrigin:'50% 100%'},{yPercent:0,rotateX:0,duration:1.05,stagger:.05})
+  tl.fromTo('.title .ch',{yPercent:115,rotateX:-90,fontVariationSettings:'"wght" 400',transformOrigin:'50% 100%'},{yPercent:0,rotateX:0,fontVariationSettings:'"wght" 900',duration:1.05,stagger:.05})
     .fromTo('#slotsvg',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:1.1,ease:'power3.inOut'},'-=.8')
     .fromTo('.bar',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:.7,ease:'power3.inOut'},'-=.7')
     .fromTo('.stamp-mast',{scale:2.8,autoAlpha:0,rotation:-26},{scale:1,autoAlpha:1,rotation:-7,duration:.3,ease:'power4.in'},'-=.15')
