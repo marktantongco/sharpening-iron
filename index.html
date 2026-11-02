@@ -197,6 +197,15 @@ html.nogl .flash{display:none}
 </nav>
 
 <main>
+  <noscript>
+    <style>
+      .chapter,.run,.calm{height:auto!important;min-height:100vh}
+      .stage,.run-stage{position:relative!important;height:auto!important;overflow:visible!important}
+      .track{display:block!important;width:auto!important;transform:none!important}
+      .panel{width:100%!important;height:auto!important;min-height:100vh}
+      #gl{display:none!important}
+    </style>
+  
   <!-- Masthead: flat -->
   <header class="mast" id="top">
     <h1 class="title" aria-label="Sharpening Iron">
@@ -809,14 +818,16 @@ async function initGL(){
   return g;
 }
 
+let resizeTimer;
 function onResize(){
   vw=innerWidth; vh=innerHeight;
   if(glx) glx.resize(vw,vh);
-  buildRopes();
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(buildRopes,120);
   if(reduce) frame(0);
 }
 addEventListener('resize',onResize);
-if(document.fonts&&document.fonts.ready) document.fonts.ready.then(onResize);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){buildRopes();onResize();});
 addEventListener('load',onResize);
 onResize();
 
