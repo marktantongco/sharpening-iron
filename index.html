@@ -40,7 +40,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .meter .pct{border-left:4px solid var(--y);min-width:68px;justify-content:flex-end}
 .ticks{position:relative;display:grid;grid-template-columns:repeat(7,1fr);min-width:0}
 .tk{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:.6em;border-right:2px solid var(--y);padding:0 2px;color:var(--y)}
-.tk:last-of-type{border-right:0}
+.tk:last-child{border-right:0}
 .tk span{display:none}
 .tk.on b{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
 .tk:hover{background:var(--y);color:var(--k)}
@@ -148,6 +148,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .calm .em{font-size:1.4rem;line-height:1}
 .calm .yl{position:absolute;left:0;right:0;top:66%;height:clamp(3px,.5vw,6px);background:var(--y)}
 .calm .compass{position:absolute;right:clamp(24px,12vw,220px);top:66%;width:clamp(150px,22vw,300px);transform:translateY(-50%)}
+.calm .meta-row{display:flex;align-items:center;gap:1rem}
 @media (max-width:760px){.calm .compass{right:20px;top:72%}.calm .yl{top:72%}}
 
 /* ───────── Footer ───────── */
@@ -316,7 +317,7 @@ html.nogl .flash{display:none}
       <h2>The Confidence of the Climb</h2>
       <p class="quote-s">“You have the map. I have the compass.”</p>
       <p>Neither of us has this figured out. But together? We see the route more clearly.</p>
-      <div style="display:flex;align-items:center;gap:1rem">
+      <div class="meta-row">
         <button class="tag" type="button" data-tag="#MapAndCompass" aria-label="Copy hashtag MapAndCompass">#MapAndCompass <i>COPY</i></button>
         <span class="em" role="img" aria-label="Compass">🧭</span>
       </div>
@@ -368,8 +369,8 @@ html.nogl .flash{display:none}
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqN5x5f2jY5l6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
 <script>
 (function(){
 'use strict';
@@ -587,7 +588,7 @@ function makeClimb(){
       A.position.set(pA.x,pA.y+1.0*S,pA.z);
       B.position.set(pB.x+2.4*off,pB.y+1.0*S,pB.z+.8*off);
       const done=p>.97;
-      pose(A,done?'cheer':(p<.48&&p>.01?'climb':'belay'),done?t*3:uA*60);
+      pose(A,done?'cheer':(p<.48?'climb':'belay'),done?t*3:uA*60);
       pose(B,done?'cheer':(p>.52?'climb':'belay'),done?t*3+1:uBraw*60);
       hA.set(A.position.x,A.position.y-.3*S,A.position.z+.2); hB.set(B.position.x,B.position.y-.3*S,B.position.z+.2);
       updateRope(hA,hB);
@@ -739,7 +740,7 @@ function updateMeter(){
   let a=-1;
   if(c1.getBoundingClientRect().top<mid) a=0;
   if(reduce){panels.forEach(function(pn,i){if(pn.getBoundingClientRect().top<mid) a=1+i;});}
-  else if(run.getBoundingClientRect().top<mid) a=1+Math.round(clamp(runPs)*2);
+  else if(run.getBoundingClientRect().top<mid) a=1+Math.min(2,Math.round(clamp(runPs)*2));
   if(c5.getBoundingClientRect().top<mid) a=4;
   if(c6.getBoundingClientRect().top<mid) a=5;
   if(c7.getBoundingClientRect().top<mid) a=6;
