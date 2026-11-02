@@ -159,3 +159,14 @@ To add a checkpoint:
 ## License
 
 MIT
+
+---
+
+## BYOK Models
+
+A companion page lists free, self-replenishing LLM API providers and models from the [awesome-free-byok-models](https://github.com/velo4705/awesome-free-byok-models) list.
+
+- **Page:** `byok.html` — filterable table of 55 providers and their free models.
+- **Data:** `providers.json` — parsed from the upstream README.
+
+Open `byok.html` alongside the main broadsheet, or deploy it as part of the same GitHub Pages site.
