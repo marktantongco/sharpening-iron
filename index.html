@@ -193,10 +193,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .sig{font:400 clamp(1.6rem,3vw,2.6rem)/1 var(--anton);text-transform:uppercase;letter-spacing:.03em}
 .top{background:var(--k);color:var(--y);padding:.9em 1.2em;font:700 .9rem/1 var(--mono);letter-spacing:.05em;border:4px solid var(--k);transition:background .1s,color .1s}
 .top:hover{background:var(--y);color:var(--k)}
-.ticker{margin:0 calc(-1*var(--pad));background:var(--k);color:var(--y);overflow:hidden;border-top:var(--rule) solid var(--k)}
+.ticker{margin:0 calc(-1*var(--pad));background:var(--k);color:var(--y);overflow:hidden;border-top:var(--rule) solid var(--k);position:relative}
 .tick{display:flex;width:max-content;animation:tick var(--ticker-duration) linear infinite;padding:.5em 0}
 .tick span{font:400 clamp(1.3rem,2.6vw,2.4rem)/1 var(--anton);letter-spacing:.06em;text-transform:uppercase;padding:0 1.1em;white-space:nowrap}
 .tick i{font-style:normal;align-self:center;font-size:.9rem}
+.ticker-pause{position:absolute;top:50%;right:8px;transform:translateY(-50%);background:var(--k);color:var(--y);border:2px solid var(--y);padding:4px 8px;font:700 10px/1 var(--mono);letter-spacing:.05em;cursor:pointer;z-index:2}
+.ticker-pause:hover{background:var(--y);color:var(--k)}
+.ticker.paused .tick{animation-play-state:paused}
+html.reduce .ticker-pause{display:none}
 @keyframes tick{to{transform:translateX(-50%)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 #loader{animation:pulse 1.2s ease-in-out infinite}
@@ -407,13 +411,17 @@ html.nogl .flash{display:none}
     <p class="sig">—Mark</p>
     <button class="top" type="button" id="toTop">BACK TO BASE CAMP ↑</button>
   </div>
-  <div class="ticker" aria-hidden="true"><div class="tick" id="tick"></div></div>
+  <div class="ticker" aria-hidden="true">
+    <button class="ticker-pause" type="button" aria-label="Pause marquee">PAUSE</button>
+    <div class="tick" id="tick"></div>
+  </div>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqN5x5f2jY5l6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"></script>
 <script>
 (function(){
 'use strict';
@@ -477,11 +485,11 @@ function voxelMesh(count,cell,depth,front,side){
   m.frustumCulled=false;
   return m;
 }
-function textTexture(lines,color){
-  const W=2048, lh=420, c=document.createElement('canvas'); c.width=W; c.height=lh*lines.length+40;
+function textTexture(lines,color,mobile){
+  const W=mobile?1024:2048, lh=mobile?210:420, c=document.createElement('canvas'); c.width=W; c.height=lh*lines.length+40;
   const g=c.getContext('2d'); g.fillStyle=color; g.textAlign='center'; g.textBaseline='middle';
   lines.forEach(function(t,i){
-    let fs=380; g.font='400 '+fs+'px '+FONT;
+    let fs=mobile?190:380; g.font='400 '+fs+'px '+FONT;
     const w=g.measureText(t).width; if(w>W-60){fs=fs*(W-60)/w; g.font='400 '+fs+'px '+FONT;}
     g.fillText(t,W/2,20+lh*i+lh/2);
   });
@@ -499,6 +507,7 @@ function makeSummit(){
   const scene=new THREE.Scene(); scene.background=new THREE.Color(PAP); scene.fog=new THREE.Fog(PAP,FOG_NEAR,FOG_FAR);
   const cam=new THREE.PerspectiveCamera(CAM_FOV,1,CAM_Z_NEAR,CAM_Z_FAR);
   const r=rng(11);
+  const geos=[];
   for(let i=0;i<RIDGES;i++){
     const W=RIDGE_BASE_W+i*RIDGE_W_STEP, z=RIDGE_Z_START+i*RIDGE_Z_STEP, hb=RIDGE_Y_BASE+i*RIDGE_Y_STEP, sh=new THREE.Shape();
     sh.moveTo(-W/2,-18);
@@ -506,19 +515,34 @@ function makeSummit(){
       sh.lineTo(x,hb+Math.sin(x*.19+i*2.3)*1.5+Math.sin(x*.47+i*.7)*.8+(r()-.5)*1.6);
     }
     sh.lineTo(W/2,-18); sh.closePath();
-    const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:BLK}));
-    m.position.z=z; scene.add(m);
+    const geo=new THREE.ShapeGeometry(sh);
+    geo.translate(0,0,z);
+    geos.push(geo);
   }
+  let totalVerts=0;
+  geos.forEach(function(g){totalVerts+=g.attributes.position.count;});
+  const mergedPos=new Float32Array(totalVerts*3);
+  let idx=0;
+  geos.forEach(function(g){
+    const arr=g.attributes.position.array;
+    for(let i=0;i<arr.length;i++) mergedPos[idx++]=arr[i];
+  });
+  const mergedGeo=new THREE.BufferGeometry();
+  mergedGeo.setAttribute('position',new THREE.BufferAttribute(mergedPos,3));
+  const ridges=new THREE.Mesh(mergedGeo,new THREE.MeshBasicMaterial({color:BLK}));
+  ridges.frustumCulled=false;
+  scene.add(ridges);
   const sun=new THREE.Mesh(new THREE.CircleGeometry(SUN_RADIUS,48),new THREE.MeshBasicMaterial({color:YEL,fog:false}));
   sun.position.set(0,SUN_Y,SUN_Z); scene.add(sun);
   const lg=new THREE.PlaneGeometry(LINE_W,.5); lg.translate(200,0,0);
   const line=new THREE.Mesh(lg,new THREE.MeshBasicMaterial({color:YEL,fog:false}));
   line.position.set(-200,LINE_Y,LINE_Z); line.scale.x=.0001; scene.add(line);
   let tex1=null, tex2=null;
+  const mobile=vw<768;
   const tm=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));
   tm.position.set(0,TEXT_Y,TEXT_Z); scene.add(tm);
   function setText(portrait){
-    if(!tex1){tex1=textTexture(['SAME MOUNTAIN'],'#0A0A0A'); tex2=textTexture(['SAME','MOUNTAIN'],'#0A0A0A');}
+    if(!tex1){tex1=textTexture(['SAME MOUNTAIN'],'#0A0A0A',mobile); tex2=textTexture(['SAME','MOUNTAIN'],'#0A0A0A',mobile);}
     const tx=portrait?tex2:tex1, w=portrait?TEXT_W_PORTRAIT:TEXT_W_LANDSCAPE;
     tm.material.map=tx; tm.material.needsUpdate=true;
     tm.scale.set(w,w/tx.userData.aspect,1);
@@ -736,6 +760,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine=matchMedia('(hover: hover) and (pointer: fine)').matches;
 const hasGsap=!!window.gsap;
 if(!window.THREE) console.warn('Sharpening Iron: Three.js failed to load. 3D scenes disabled.');
+if(hasGsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 if(!hasGsap) console.warn('Sharpening Iron: GSAP failed to load. Intro and microinteractions disabled.');
 if(reduce) document.documentElement.classList.add('reduce');
 
@@ -752,7 +777,7 @@ const items=[{el:c1},{panel:0},{panel:1},{panel:2},{el:c5},{el:c6},{el:c7}];
 const shorts=[c1,panels[0],panels[1],panels[2],c5,c6,c7].map(function(e){return e.dataset.short;});
 const chapters=[{el:c1,key:'summit',ps:0},{el:c5,key:'climb',ps:0},{el:c7,key:'forge',ps:0}];
 chapters.forEach(function(c){c.hd=$('.hd',c.el); c.cap=$('.cap',c.el); c.rh=-1; c.rc=-1;});
-let vw=innerWidth, vh=innerHeight, glx=null, runPs=0;
+let vw=innerWidth, vh=innerHeight, glx=null;
 
 /* 3 · Meter */
 const ticks=$('#ticks');
@@ -774,27 +799,65 @@ function goto(i){
     scrollTo({top:top+(it.panel/2)*(run.offsetHeight-innerHeight),behavior:beh});
   }
 }
-let active=-2, meterTimer=0;
-function updateMeter(){
-  const now=performance.now();
-  if(now-meterTimer<100) return; // throttle to ~10fps
-  meterTimer=now;
-  const mid=innerHeight*.5, max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
-  const p=clamp(scrollY/max);
-  fill.style.width=(p*100).toFixed(2)+'%';
-  pctEl.textContent=String(Math.round(p*100)).padStart(2,'0')+'%';
-  let a=-1;
-  if(c1.getBoundingClientRect().top<mid) a=0;
-  if(reduce){panels.forEach(function(pn,i){if(pn.getBoundingClientRect().top<mid) a=1+i;});}
-  else if(run.getBoundingClientRect().top<mid) a=1+Math.min(2,Math.round(clamp(runPs)*2));
-  if(c5.getBoundingClientRect().top<mid) a=4;
-  if(c6.getBoundingClientRect().top<mid) a=5;
-  if(c7.getBoundingClientRect().top<mid) a=6;
-  if(a!==active){
-    active=a;
-    tks.forEach(function(b,k){b.classList.toggle('on',k===a); if(k===a) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current');});
-    cpEl.textContent=String(a+1).padStart(2,'0');
+let active=-2;
+function setActiveMeter(a){
+  if(a===active) return;
+  active=a;
+  tks.forEach(function(b,k){
+    b.classList.toggle('on',k===a);
+    if(k===a) b.setAttribute('aria-current','true');
+    else b.removeAttribute('aria-current');
+  });
+  cpEl.textContent=String(a+1).padStart(2,'0');
+}
+
+function setupScrollMeter(){
+  if(!window.ScrollTrigger) return;
+
+  ScrollTrigger.create({
+    trigger: document.documentElement,
+    start: "top top",
+    end: "bottom bottom",
+    onUpdate: function(self){
+      fill.style.width=(self.progress*100).toFixed(2)+'%';
+      pctEl.textContent=String(Math.round(self.progress*100)).padStart(2,'0')+'%';
+    }
+  });
+
+  function checkpointTrigger(el, index){
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 50%",
+      end: "bottom 50%",
+      onEnter: function(){ setActiveMeter(index); },
+      onEnterBack: function(){ setActiveMeter(index); }
+    });
   }
+
+  if(reduce){
+    panels.forEach(function(pn, i){ checkpointTrigger(pn, 1+i); });
+  } else {
+    ScrollTrigger.create({
+      trigger: ".run",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 1,
+      onUpdate: function(self){
+        const p = self.progress;
+        track.style.transform='translate3d('+(-p*2*vw).toFixed(1)+'px,0,0)';
+        for(let i=0;i<3;i++) panelFx(i, p*2 - i);
+        const panelIndex = Math.min(2, Math.round(clamp(p)*2));
+        setActiveMeter(1 + panelIndex);
+        const o = p * 500;
+        for(let i=0;i<dashEls.length;i++) dashEls[i].setAttribute('stroke-dashoffset',(parseFloat(dashEls[i].dataset.o)+o).toFixed(1));
+      }
+    });
+  }
+
+  checkpointTrigger(c1, 0);
+  checkpointTrigger(c5, 4);
+  checkpointTrigger(c6, 5);
+  checkpointTrigger(c7, 6);
 }
 
 /* 4 · The braided rope (flat SVG): two strands, striped, tightening to a knot */
@@ -879,17 +942,6 @@ function frame(now){
       if(act.key==='forge') glx.flash.style.opacity=(sc.flash*.85).toFixed(3);
     }else glx.canvas.style.visibility='hidden';
   }
-  const rr=run.getBoundingClientRect(), rspan=rr.height-vh;
-  const rawRun=reduce?0:(rspan>0?clamp(-rr.top/rspan):0);
-  runPs=reduce?0:runPs+(rawRun-runPs)*(1-Math.exp(-dt*8));
-  if(reduce){for(let i=0;i<3;i++) panelFx(i,0);}
-  else{
-    track.style.transform='translate3d('+(-runPs*2*vw).toFixed(1)+'px,0,0)';
-    for(let i=0;i<3;i++) panelFx(i,runPs*2-i);
-    const o=runPs*500;
-    for(let i=0;i<dashEls.length;i++) dashEls[i].setAttribute('stroke-dashoffset',(parseFloat(dashEls[i].dataset.o)+o).toFixed(1));
-  }
-  updateMeter();
 }
 
 /* 7 · WebGL boot (after the display font is ready so voxel type samples the real letters) */
@@ -936,6 +988,7 @@ function start(){
   if(loader) loader.style.display='none';
   if(reduce){addEventListener('scroll',function(){frame(0);},{passive:true}); frame(0);}
   else{(function loop(n){frame(n); requestAnimationFrame(loop);})(performance.now());}
+  setupScrollMeter();
 }
 initGL().then(function(g){glx=g; onResize(); start();}).catch(function(){
   document.documentElement.classList.add('nogl'); glx=null; start();
@@ -997,6 +1050,23 @@ $('#toTop').addEventListener('click',function(){scrollTo({top:0,behavior:reduce?
   svg.setAttribute('viewBox','0 0 '+x+' 64'); svg.innerHTML=out;
   const unit='<span>See you at the next checkpoint — Mark</span><i>▲</i>', half=new Array(5).join(unit);
   $('#tick').innerHTML=half+half;
+})();
+
+/* Marquee pause button (WCAG 2.2.2) */
+(function(){
+  const ticker = document.querySelector('.ticker');
+  const tickerBtn = document.querySelector('.ticker-pause');
+  if(ticker && tickerBtn){
+    tickerBtn.addEventListener('click', function(){
+      const paused = ticker.classList.toggle('paused');
+      tickerBtn.textContent = paused ? 'PLAY' : 'PAUSE';
+      tickerBtn.setAttribute('aria-label', paused ? 'Play marquee' : 'Pause marquee');
+    });
+    if(reduce){
+      ticker.classList.add('paused');
+      tickerBtn.style.display='none';
+    }
+  }
 })();
 })();
 </script>
