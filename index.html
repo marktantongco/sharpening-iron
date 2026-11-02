@@ -8,6 +8,8 @@
 <meta name="description" content="Seven checkpoints. One covenant. A letter from Mark to Rob, set as a broadsheet.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="script" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+<link rel="preload" as="script" href="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -185,9 +187,12 @@ html.nogl .c5 .stage{background:var(--y)}
 html.nogl .c7 .stage{background:var(--k)}
 html.nogl .hd,html.nogl .cap{position:relative;top:auto;left:auto;margin:14px}
 html.nogl .flash{display:none}
+.skip{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip:focus{position:fixed;left:16px;top:16px;width:auto;height:auto;padding:8px 12px;background:var(--k);color:var(--y);border:4px solid var(--y);z-index:9999;font:700 14px/1 var(--mono)}
 </style>
 </head>
 <body>
+<a class="skip" href="#run">Skip to checkpoints</a>
 <canvas id="gl" aria-hidden="true"></canvas>
 
 <nav class="meter" aria-label="Checkpoints">
@@ -441,12 +446,17 @@ function textTexture(lines,color){
 }
 
 /* ═════ 01 · THE QUIET SUMMIT — layered paper-cut ridges, fog, a yellow sunrise line ═════ */
+/* Fixed-seed PRNG ensures the summit ridges, camera path, and text placement are identical on every load. */
 function makeSummit(){
-  const scene=new THREE.Scene(); scene.background=new THREE.Color(PAP); scene.fog=new THREE.Fog(PAP,8,64);
-  const cam=new THREE.PerspectiveCamera(45,1,.1,300);
+  const RIDGES=7, RIDGE_BASE_W=70, RIDGE_W_STEP=16, RIDGE_Z_START=-4, RIDGE_Z_STEP=-7.5, RIDGE_Y_BASE=.9, RIDGE_Y_STEP=1.15;
+  const SUN_RADIUS=10, SUN_Y=-3, SUN_Z=-70, LINE_W=400, LINE_Y=7, LINE_Z=-69.5, FOG_NEAR=8, FOG_FAR=64;
+  const CAM_FOV=45, CAM_Z_NEAR=.1, CAM_Z_FAR=300, CAM_START_Z=9, CAM_END_Z=-40, CAM_START_Y=2.2, CAM_END_Y=9.5;
+  const TEXT_W_PORTRAIT=34, TEXT_W_LANDSCAPE=58, TEXT_Z=-19, TEXT_Y=9, VIEW_OFFSET_Y_RATIO=.06;
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(PAP); scene.fog=new THREE.Fog(PAP,FOG_NEAR,FOG_FAR);
+  const cam=new THREE.PerspectiveCamera(CAM_FOV,1,CAM_Z_NEAR,CAM_Z_FAR);
   const r=rng(11);
-  for(let i=0;i<7;i++){
-    const W=70+i*16, z=-4-i*7.5, hb=.9+i*1.15, sh=new THREE.Shape();
+  for(let i=0;i<RIDGES;i++){
+    const W=RIDGE_BASE_W+i*RIDGE_W_STEP, z=RIDGE_Z_START+i*RIDGE_Z_STEP, hb=RIDGE_Y_BASE+i*RIDGE_Y_STEP, sh=new THREE.Shape();
     sh.moveTo(-W/2,-18);
     for(let x=-W/2;x<=W/2+.01;x+=1.1+r()*.6){
       sh.lineTo(x,hb+Math.sin(x*.19+i*2.3)*1.5+Math.sin(x*.47+i*.7)*.8+(r()-.5)*1.6);
@@ -455,92 +465,114 @@ function makeSummit(){
     const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:BLK}));
     m.position.z=z; scene.add(m);
   }
-  const sun=new THREE.Mesh(new THREE.CircleGeometry(10,48),new THREE.MeshBasicMaterial({color:YEL,fog:false}));
-  sun.position.set(0,-3,-70); scene.add(sun);
-  const lg=new THREE.PlaneGeometry(400,.5); lg.translate(200,0,0);
+  const sun=new THREE.Mesh(new THREE.CircleGeometry(SUN_RADIUS,48),new THREE.MeshBasicMaterial({color:YEL,fog:false}));
+  sun.position.set(0,SUN_Y,SUN_Z); scene.add(sun);
+  const lg=new THREE.PlaneGeometry(LINE_W,.5); lg.translate(200,0,0);
   const line=new THREE.Mesh(lg,new THREE.MeshBasicMaterial({color:YEL,fog:false}));
-  line.position.set(-200,7,-69.5); line.scale.x=.0001; scene.add(line);
+  line.position.set(-200,LINE_Y,LINE_Z); line.scale.x=.0001; scene.add(line);
   let tex1=null, tex2=null;
   const tm=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));
-  tm.position.set(0,9,-19); scene.add(tm);
+  tm.position.set(0,TEXT_Y,TEXT_Z); scene.add(tm);
   function setText(portrait){
     if(!tex1){tex1=textTexture(['SAME MOUNTAIN'],'#0A0A0A'); tex2=textTexture(['SAME','MOUNTAIN'],'#0A0A0A');}
-    const tx=portrait?tex2:tex1, w=portrait?34:58;
+    const tx=portrait?tex2:tex1, w=portrait?TEXT_W_PORTRAIT:TEXT_W_LANDSCAPE;
     tm.material.map=tx; tm.material.needsUpdate=true;
     tm.scale.set(w,w/tx.userData.aspect,1);
   }
   return {
     scene:scene, cam:cam,
     resize:function(w,h){
-      cam.aspect=w/h; cam.setViewOffset(w,h,0,Math.round(h*.06),w,h); cam.updateProjectionMatrix();
+      cam.aspect=w/h; cam.setViewOffset(w,h,0,Math.round(h*VIEW_OFFSET_Y_RATIO),w,h); cam.updateProjectionMatrix();
       setText(w/h<.85);
     },
     update:function(p,t){
-      const z=lerp(9,-40,p), y=lerp(2.2,9.5,p);
+      const z=lerp(CAM_START_Z,CAM_END_Z,p), y=lerp(CAM_START_Y,CAM_END_Y,p);
       cam.position.set(Math.sin(t*.25)*.3,y+Math.sin(t*.4)*.1,z);
       cam.lookAt(0,y*.55+1,z-18);
-      sun.position.y=lerp(-3,13,sstep(.25,.85,p));
+      sun.position.y=lerp(SUN_Y,13,sstep(.25,.85,p));
       line.scale.x=Math.max(.0001,sstep(.78,.97,p));
-      const w=sstep(.82,1,p); scene.fog.near=lerp(8,-6,w); scene.fog.far=lerp(64,30,w);
+      const w=sstep(.82,1,p); scene.fog.near=lerp(FOG_NEAR,-6,w); scene.fog.far=lerp(FOG_FAR,30,w);
     }
   };
 }
 
 /* ═════ 05 · PAPER CLIMBERS — a headline cliff, two faceless figures, one rope, a role swap ═════ */
+/* Fixed-seed PRNG makes the climber path, rope sway, and figure jitter reproducible on every load. */
 function makeClimb(){
+  const VOXEL_CELL=.17, VOXEL_DEPTH=.5, FIGURE_SCALE=.9, ROPE_SEGMENTS=30;
+  const CAM_FOV=40, CAM_Z_NEAR=.1, CAM_Z_FAR=300, VIEW_OFFSET_Y_RATIO=.08;
+  const GROUND_Y_OFFSET=-.6, GROUND_Z=1.5, ROPE_Y_OFFSET=.62, ROPE_Z=.62;
+  const LIMB_ARM_W=.16, LIMB_ARM_H=.62, LIMB_ARM_X=.37, LIMB_ARM_Y=.35;
+  const LIMB_LEG_W=.2, LIMB_LEG_H=.7, LIMB_LEG_X=.15, LIMB_LEG_Y=-.4;
+  const BODY_W=.55, BODY_H=.8, BODY_D=.28, BELT_W=.58, BELT_H=.14, BELT_D=.3, HEAD_R=.26;
+  const PATH_POINTS=[[-.42,0],[-.34,.2],[-.12,.38],[.06,.55],[.2,.8],[.36,1]];
+  const EASE_CLIMB_A=.48, EASE_CLIMB_B=.52, EASE_CLIMB_B_SCALE=.9;
+  const POSE_CLIMB_ARM=-2.7, POSE_CLIMB_ARM_PH=.35, POSE_CLIMB_LEG=-.15, POSE_CLIMB_LEG_PH=.4;
+  const POSE_BELAY_ARM=-2.2, POSE_BELAY_LEG=-.14;
+  const POSE_CHEER_ARM=-2.9, POSE_CHEER_ARM_PH=.25, POSE_CHEER_LEG=-.1;
+  const ROPE_SAG_CLAMP=4, ROPE_SAG_SCALE=.25, ROPE_SAG_Y=.35, ROPE_SCALE_XY=1.15;
+  const CAM_CENTER_Z=.3, CAM_TARGET_Y=1.4, CAM_TARGET_Z_OFFSET=.8;
+  const DIST_INIT=30;
   const scene=new THREE.Scene(); scene.background=new THREE.Color(YEL);
-  const cam=new THREE.PerspectiveCamera(40,1,.1,300);
-  const cell=.17, depth=.5;
+  const cam=new THREE.PerspectiveCamera(CAM_FOV,1,CAM_Z_NEAR,CAM_Z_FAR);
+  const cell=VOXEL_CELL, depth=VOXEL_DEPTH;
   const vt=voxelText(['HOLD','THE LINE'],{step:8,justify:true,cols:96,cell:cell,gap:3});
   const wall=voxelMesh(vt.pts.length,cell,depth,BLK,PAP), dummy=new THREE.Object3D();
   vt.pts.forEach(function(q,i){dummy.position.set(q.x,q.y,0); dummy.scale.set(1,1,1); dummy.updateMatrix(); wall.setMatrixAt(i,dummy.matrix);});
   wall.instanceMatrix.needsUpdate=true; scene.add(wall);
   const WW=vt.width, HH=vt.height, y0=-HH/2, y1=HH/2;
   const ground=new THREE.Mesh(new THREE.BoxGeometry(WW+14,1.2,5),new THREE.MeshBasicMaterial({color:BLK}));
-  ground.position.set(0,y0-.6,1.5);
+  ground.position.set(0,y0+GROUND_Y_OFFSET,GROUND_Z);
   ground.add(new THREE.LineSegments(new THREE.EdgesGeometry(ground.geometry),new THREE.LineBasicMaterial({color:PAP})));
   scene.add(ground);
 
-  const S=.9, edgeMat=new THREE.LineBasicMaterial({color:BLK});
+  const S=FIGURE_SCALE, edgeMat=new THREE.LineBasicMaterial({color:BLK});
   const paperM=new THREE.MeshBasicMaterial({color:PAP}), blkM=new THREE.MeshBasicMaterial({color:BLK});
   function part(geo,mat,x,y,z){const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),edgeMat)); return m;}
   function limb(w,h,x,y){const piv=new THREE.Group(); piv.position.set(x,y,0); piv.add(part(new THREE.BoxGeometry(w,h,w),paperM,0,-h/2,0)); return piv;}
   function figure(){
     const g=new THREE.Group();
-    const armL=limb(.16,.62,-.37,.35), armR=limb(.16,.62,.37,.35), legL=limb(.2,.7,-.15,-.4), legR=limb(.2,.7,.15,-.4);
-    g.add(part(new THREE.BoxGeometry(.55,.8,.28),paperM,0,0,0), part(new THREE.BoxGeometry(.58,.14,.3),blkM,0,-.3,0),
-          part(new THREE.IcosahedronGeometry(.26,0),paperM,0,.62,0), armL,armR,legL,legR);
+    const armL=limb(LIMB_ARM_W,LIMB_ARM_H,-LIMB_ARM_X,LIMB_ARM_Y), armR=limb(LIMB_ARM_W,LIMB_ARM_H,LIMB_ARM_X,LIMB_ARM_Y);
+    const legL=limb(LIMB_LEG_W,LIMB_LEG_H,-LIMB_LEG_X,LIMB_LEG_Y), legR=limb(LIMB_LEG_W,LIMB_LEG_H,LIMB_LEG_X,LIMB_LEG_Y);
+    g.add(part(new THREE.BoxGeometry(BODY_W,BODY_H,BODY_D),paperM,0,0,0), part(new THREE.BoxGeometry(BELT_W,BELT_H,BELT_D),blkM,0,-.3,0),
+          part(new THREE.IcosahedronGeometry(HEAD_R,0),paperM,0,.62,0), armL,armR,legL,legR);
     g.scale.setScalar(S); g.userData={armL:armL,armR:armR,legL:legL,legR:legR};
     scene.add(g); return g;
   }
   const A=figure(), B=figure();
   function pose(f,mode,ph){
     const u=f.userData, s=Math.sin;
-    if(mode==='climb'){u.armL.rotation.z=-(2.7+s(ph)*.35); u.armR.rotation.z=2.7+s(ph+Math.PI)*.35; u.legL.rotation.z=-.15-s(ph+Math.PI)*.4; u.legR.rotation.z=.15+s(ph)*.4;}
-    else if(mode==='belay'){u.armL.rotation.z=-2.2; u.armR.rotation.z=2.2; u.legL.rotation.z=-.14; u.legR.rotation.z=.14;}
-    else {u.armL.rotation.z=-(2.9+s(ph)*.25); u.armR.rotation.z=2.9+s(ph+1)*.25; u.legL.rotation.z=-.1; u.legR.rotation.z=.1;}
+    if(mode==='climb'){u.armL.rotation.z=-(POSE_CLIMB_ARM+s(ph)*POSE_CLIMB_ARM_PH);
+      u.armR.rotation.z=POSE_CLIMB_ARM+s(ph+Math.PI)*POSE_CLIMB_ARM_PH;
+      u.legL.rotation.z=POSE_CLIMB_LEG-s(ph+Math.PI)*POSE_CLIMB_LEG_PH;
+      u.legR.rotation.z=-POSE_CLIMB_LEG+s(ph)*POSE_CLIMB_LEG_PH;}
+    else if(mode==='belay'){u.armL.rotation.z=POSE_BELAY_ARM; u.armR.rotation.z=-POSE_BELAY_ARM;
+      u.legL.rotation.z=POSE_BELAY_LEG; u.legR.rotation.z=-POSE_BELAY_LEG;}
+    else {u.armL.rotation.z=-(POSE_CHEER_ARM+s(ph)*POSE_CHEER_ARM_PH);
+      u.armR.rotation.z=POSE_CHEER_ARM+s(ph+1)*POSE_CHEER_ARM_PH;
+      u.legL.rotation.z=POSE_CHEER_LEG; u.legR.rotation.z=-POSE_CHEER_LEG;}
   }
-  const path=new THREE.CatmullRomCurve3([[-.42,0],[-.34,.2],[-.12,.38],[.06,.55],[.2,.8],[.36,1]].map(function(q){
-    return new THREE.Vector3(q[0]*WW,lerp(y0,y1,q[1])+.05,.62);
+  const path=new THREE.CatmullRomCurve3(PATH_POINTS.map(function(q){
+    return new THREE.Vector3(q[0]*WW,lerp(y0,y1,q[1])+.05,ROPE_Z);
   }));
-  const NR=30, rope=new THREE.InstancedMesh(new THREE.BoxGeometry(.1,.1,1),new THREE.MeshBasicMaterial({color:0xffffff}),NR);
+  const NR=ROPE_SEGMENTS, rope=new THREE.InstancedMesh(new THREE.BoxGeometry(.1,.1,1),new THREE.MeshBasicMaterial({color:0xffffff}),NR);
   for(let i=0;i<NR;i++) rope.setColorAt(i,new THREE.Color(i%2?PAP:BLK));
   rope.instanceColor.needsUpdate=true; rope.frustumCulled=false; scene.add(rope);
   const ra=new THREE.Vector3(), rb=new THREE.Vector3(), rm=new THREE.Vector3(), pa=new THREE.Vector3(), pb=new THREE.Vector3(), rd=new THREE.Object3D();
   function quad(t,out){const k=1-t; out.set(k*k*ra.x+2*k*t*rm.x+t*t*rb.x, k*k*ra.y+2*k*t*rm.y+t*t*rb.y, k*k*ra.z+2*k*t*rm.z+t*t*rb.z); return out;}
   function updateRope(a,b){
     ra.copy(a); rb.copy(b); const d=ra.distanceTo(rb);
-    rm.addVectors(ra,rb).multiplyScalar(.5); rm.y-=clamp(4-d*.25,.2,3); rm.z+=.35;
+    rm.addVectors(ra,rb).multiplyScalar(.5); rm.y-=clamp(ROPE_SAG_CLAMP-d*ROPE_SAG_SCALE,.2,3); rm.z+=ROPE_SAG_Y;
     for(let i=0;i<NR;i++){
       quad(i/NR,pa); quad((i+1)/NR,pb);
       rd.position.addVectors(pa,pb).multiplyScalar(.5); rd.lookAt(pb);
-      rd.scale.set(1,1,pa.distanceTo(pb)*1.15+.001); rd.updateMatrix(); rope.setMatrixAt(i,rd.matrix);
+      rd.scale.set(1,1,pa.distanceTo(pb)*ROPE_SCALE_XY+.001); rd.updateMatrix(); rope.setMatrixAt(i,rd.matrix);
     }
     rope.instanceMatrix.needsUpdate=true;
   }
   const ease=function(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;};
-  const center=new THREE.Vector3(0,0,.3), tgt=new THREE.Vector3(), pA=new THREE.Vector3(), pB=new THREE.Vector3(), hA=new THREE.Vector3(), hB=new THREE.Vector3();
-  let dist=30;
+  const center=new THREE.Vector3(0,0,CAM_CENTER_Z), tgt=new THREE.Vector3(), pA=new THREE.Vector3(), pB=new THREE.Vector3(), hA=new THREE.Vector3(), hB=new THREE.Vector3();
+  let dist=DIST_INIT;
   return {
     scene:scene, cam:cam,
     resize:function(w,h){
@@ -569,31 +601,39 @@ function makeClimb(){
 }
 
 /* ═════ 07 · THE FORGE — two bars heat and strike three times; each hit lands a word ═════ */
+/* Fixed-seed PRNG keeps spark behaviour and word jitter deterministic across reloads. */
 function makeForge(portrait){
+  const VOXEL_CELL_PORTRAIT=.19, VOXEL_CELL_LANDSCAPE=.17, VOXEL_DEPTH=.6;
+  const BAR_W=5, BAR_H=.72, BAR_D=.72, BAR_COLOR=0x1c1c1c;
+  const SPARK_COUNT=90, SPARK_W=.16, SPARK_H=.16, SPARK_D=.03;
+  const SPARK_V_MIN=4, SPARK_V_MAX=12, SPARK_S_MIN=.5, SPARK_S_MAX=1.2;
+  const RING_INNER=.9, RING_OUTER=1, RING_Z=.8;
+  const STRIKE_TIMES=[.46,.66,.84];
+  const WORD_TARGET_Y=-3, WORD_START_Z=.6, WORD_EARLY_SCALE=.35, WORD_LATE_SCALE=1;
+  const CAM_FOV=40, CAM_Z_NEAR=.1, CAM_Z_FAR=300, DIST_INIT=30;
   const scene=new THREE.Scene(); scene.background=new THREE.Color(BLK);
-  const cam=new THREE.PerspectiveCamera(40,1,.1,300);
-  const cell=portrait?.19:.17, depth=.6;
+  const cam=new THREE.PerspectiveCamera(CAM_FOV,1,CAM_Z_NEAR,CAM_Z_FAR);
+  const cell=portrait?VOXEL_CELL_PORTRAIT:VOXEL_CELL_LANDSCAPE, depth=VOXEL_DEPTH;
   const vt=portrait?voxelText(['IRON','ON','IRON'],{step:8,justify:false,fs:230,cell:cell,gap:3})
                    :voxelText(['IRON ON IRON'],{step:8,justify:true,cols:150,cell:cell,gap:3});
   const words=voxelMesh(vt.pts.length,cell,depth,YEL,PAP); scene.add(words);
   const r=rng(5), V=vt.pts.map(function(q){return {tx:q.x,ty:q.y,sx:(r()-.5)*1.2,sy:(r()-.5)*1.2,sz:.5+r()*1.2,w:Math.min(2,q.w),a:(r()-.5)*5};});
-  const STR=[.46,.66,.84];
   function bar(){
-    const m=new THREE.Mesh(new THREE.BoxGeometry(5,.72,.72),new THREE.MeshBasicMaterial({color:0x1c1c1c}));
+    const m=new THREE.Mesh(new THREE.BoxGeometry(BAR_W,BAR_H,BAR_D),new THREE.MeshBasicMaterial({color:BAR_COLOR}));
     m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),new THREE.LineBasicMaterial({color:PAP})));
     scene.add(m); return m;
   }
-  const L=bar(), R=bar(), cold=new THREE.Color(0x1c1c1c), hot=new THREE.Color(YEL);
-  const NS=90, sparks=new THREE.InstancedMesh(new THREE.BoxGeometry(.16,.16,.03),new THREE.MeshBasicMaterial({color:0xffffff}),NS*3);
+  const L=bar(), R=bar(), cold=new THREE.Color(BAR_COLOR), hot=new THREE.Color(YEL);
+  const NS=SPARK_COUNT, sparks=new THREE.InstancedMesh(new THREE.BoxGeometry(SPARK_W,SPARK_H,SPARK_D),new THREE.MeshBasicMaterial({color:0xffffff}),NS*3);
   const sr=rng(9), SP=[];
-  for(let i=0;i<NS*3;i++){ SP.push({a:sr()*Math.PI*2,v:4+sr()*12,s:.5+sr()*1.2,z:(sr()-.5),k:Math.floor(i/NS),r:sr()*6}); sparks.setColorAt(i,new THREE.Color(sr()>.4?YEL:PAP)); }
+  for(let i=0;i<NS*3;i++){ SP.push({a:sr()*Math.PI*2,v:SPARK_V_MIN+sr()*(SPARK_V_MAX-SPARK_V_MIN),s:SPARK_S_MIN+sr()*(SPARK_S_MAX-SPARK_S_MIN),z:(sr()-.5),k:Math.floor(i/NS),r:sr()*6}); sparks.setColorAt(i,new THREE.Color(sr()>.4?YEL:PAP)); }
   sparks.instanceColor.needsUpdate=true; sparks.frustumCulled=false; scene.add(sparks);
-  const rings=STR.map(function(s,i){
-    const m=new THREE.Mesh(new THREE.RingGeometry(.9,1,64),new THREE.MeshBasicMaterial({color:i%2?PAP:YEL,transparent:true,side:THREE.DoubleSide}));
-    m.position.set(0,0,.8); m.visible=false; scene.add(m); return m;
+  const rings=STRIKE_TIMES.map(function(s,i){
+    const m=new THREE.Mesh(new THREE.RingGeometry(RING_INNER,RING_OUTER,64),new THREE.MeshBasicMaterial({color:i%2?PAP:YEL,transparent:true,side:THREE.DoubleSide}));
+    m.position.set(0,0,RING_Z); m.visible=false; scene.add(m); return m;
   });
   const d=new THREE.Object3D(), tcol=new THREE.Color();
-  let dist=30, prev=0, kick=0;
+  let dist=DIST_INIT, prev=0, kick=0;
   const api={scene:scene,cam:cam,flash:0,
     resize:function(w,h){
       const asp=w/h, tn=Math.tan(20*Math.PI/180);
@@ -602,19 +642,19 @@ function makeForge(portrait){
     },
     update:function(p,t,dt){
       dt=dt||.016;
-      STR.forEach(function(s){ if((prev<s&&p>=s)||(prev>=s&&p<s)) kick=1; });
+      STRIKE_TIMES.forEach(function(s){ if((prev<s&&p>=s)||(prev>=s&&p<s)) kick=1; });
       prev=p; kick*=Math.exp(-dt*5); api.flash=kick;
-      let dd=1; STR.forEach(function(s){dd=Math.min(dd,Math.abs(p-s)/.09);});
+      let dd=1; STRIKE_TIMES.forEach(function(s){dd=Math.min(dd,Math.abs(p-s)/.09);});
       const gap=Math.pow(clamp(dd),1.4)*3.2, away=sstep(.9,1,p);
       tcol.lerpColors(cold,hot,sstep(.1,.5,p)); L.material.color.copy(tcol); R.material.color.copy(tcol);
       L.position.set(-(2.5+gap/2)-away*8,-away*7,0); R.position.set(2.5+gap/2+away*8,-away*7,0);
       L.rotation.z=.14*(gap/3.2); R.rotation.z=-.14*(gap/3.2);
       for(let i=0;i<V.length;i++){
-        const v=V[i], e=eOut(clamp((p-STR[v.w])/.08));
+        const v=V[i], e=eOut(clamp((p-STRIKE_TIMES[v.w])/.08));
         if(e<=0){d.scale.set(0,0,0);}
         else{
-          d.position.set(lerp(v.sx,v.tx,e),lerp(v.sy,v.ty,e)+(1-e)*v.a,lerp(.6,-3,e)+(1-e)*v.sz);
-          d.scale.setScalar(lerp(.35,1,e));
+          d.position.set(lerp(v.sx,v.tx,e),lerp(v.sy,v.ty,e)+(1-e)*v.a,lerp(WORD_START_Z,WORD_TARGET_Y,e)+(1-e)*v.sz);
+          d.scale.setScalar(lerp(WORD_EARLY_SCALE,WORD_LATE_SCALE,e));
         }
         d.updateMatrix(); words.setMatrixAt(i,d.matrix);
       }
@@ -651,6 +691,8 @@ const $$=function(s,r){return Array.from((r||document).querySelectorAll(s));};
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine=matchMedia('(hover: hover) and (pointer: fine)').matches;
 const hasGsap=!!window.gsap;
+if(!window.THREE) console.warn('Sharpening Iron: Three.js failed to load. 3D scenes disabled.');
+if(!hasGsap) console.warn('Sharpening Iron: GSAP failed to load. Intro and microinteractions disabled.');
 if(reduce) document.documentElement.classList.add('reduce');
 
 /* 1 · Split the masthead into letters */
@@ -765,6 +807,7 @@ function setClip(el,r){el.style.clipPath='inset(0 '+((1-r)*100).toFixed(1)+'% 0 
 let tPrev=0;
 function frame(now){
   const t=now/1000, dt=reduce?.016:clamp(t-tPrev,.001,.1); tPrev=t;
+  if(dt>.1) return; // frame-budget bail: skip if the browser was busy
   let act=null;
   chapters.forEach(function(c){
     const r=c.el.getBoundingClientRect(), span=r.height-vh;
@@ -821,10 +864,12 @@ async function initGL(){
 let resizeTimer;
 function onResize(){
   vw=innerWidth; vh=innerHeight;
-  if(glx) glx.resize(vw,vh);
   clearTimeout(resizeTimer);
-  resizeTimer=setTimeout(buildRopes,120);
-  if(reduce) frame(0);
+  resizeTimer=setTimeout(function(){
+    if(glx) glx.resize(vw,vh);
+    buildRopes();
+    if(reduce) frame(0);
+  },120);
 }
 addEventListener('resize',onResize);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){buildRopes();onResize();});
@@ -857,14 +902,22 @@ function toast(msg){toastEl.textContent=msg; toastEl.classList.add('on'); clearT
 async function copyText(txt){
   try{await navigator.clipboard.writeText(txt); return true;}
   catch(e){
-    try{const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok;}
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; ta.style.left='-9999px';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }
     catch(e2){return false;}
   }
 }
 $$('.tag').forEach(function(chip){
   chip.addEventListener('click',async function(){
     const ok=await copyText(chip.dataset.tag);
-    toast(ok?'COPIED '+chip.dataset.tag:'SELECT + COPY '+chip.dataset.tag);
+    toast(ok?'COPIED '+chip.dataset.tag:'COPY FAILED — SELECT + COPY '+chip.dataset.tag);
     if(hasGsap&&!reduce&&!chip.closest('.calm')) gsap.fromTo(chip,{scale:.9},{scale:1,duration:.5,ease:'elastic.out(1.4,.4)'});
   });
 });
