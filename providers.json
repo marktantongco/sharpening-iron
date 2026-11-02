@@ -1,0 +1,499 @@
+{
+  "providers": [
+    {
+      "name": "AION Labs",
+      "url": "https://www.aionlabs.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 15 RPM / 20,000 TPD",
+      "base_url": "https://api.aionlabs.ai/v1",
+      "quota": "15 RPM / 20,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Ambient AI",
+      "url": "https://ambient.xyz",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Hourly or Daily or Monthly Limits",
+      "base_url": "https://api.ambient.xyz/v1",
+      "quota": "Hourly or Daily or Monthly Limits",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "AnyAPI AI",
+      "url": "https://anyapi.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 100,000 tokens/day / No Credit Card",
+      "base_url": "https://api.anyapi.ai/v1",
+      "quota": "100,000 tokens/day / No Credit Card",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Bee By HEOSSI",
+      "url": "https://bee.heossi.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Free models only / 2M Tokens per Month",
+      "base_url": "https://api.bee.heossi.com/bee",
+      "quota": "Free models only / 2M Tokens per Month",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Cloudflare Workers AI",
+      "url": "https://dash.cloudflare.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 150 to 1,500 RPM / 100,000 RPD / 13,000 TPD",
+      "base_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+      "quota": "150 to 1,500 RPM / 100,000 RPD / 13,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Cohere AI",
+      "url": "https://dashboard.cohere.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 20 RPM / 1,000 API calls per month",
+      "base_url": "https://api.cohere.com/v2",
+      "quota": "20 RPM / 1,000 API calls per month",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "ElectronHub",
+      "url": "https://electronhub.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5 RPM / $0.25 Weekly Credits",
+      "base_url": "https://api.electronhub.ai/v1",
+      "quota": "5 RPM / $0.25 Weekly Credits",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "EvolveX",
+      "url": "https://evolvex.gg",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5 RPM / Unspecified RPD",
+      "base_url": "https://api.evolvex.gg/v1",
+      "quota": "5 RPM / Unspecified RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Free.ai",
+      "url": "https://free.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPM / 30,000 TPD / 1,000 Requests per month / Currently available self-hosted models only",
+      "base_url": "https://api.free.ai/v1",
+      "quota": "10 RPM / 30,000 TPD / 1,000 Requests per month / Currently available self-hosted models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "FreeInference",
+      "url": "https://freeinference.org",
+      "description": "\ud83c\udf81 **Free Tier Quota:** $20 CPD / 2 Max Concurrent Requests",
+      "base_url": "https://freeinference.org/v1",
+      "quota": "$20 CPD / 2 Max Concurrent Requests",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Gonka Broker",
+      "url": "https://gonkabroker.com/",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 6 RPM / ~1M tokens per month",
+      "base_url": "https://proxy.gonkabroker.com/v1/",
+      "quota": "6 RPM / ~1M tokens per month",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Google Gemini",
+      "url": "https://aistudio.google.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5-20 RPM / 20-500 RPD / 1M TPM / Uncapped TPD",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "quota": "5-20 RPM / 20-500 RPD / 1M TPM / Uncapped TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Groq API",
+      "url": "https://console.groq.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 30 RPM / 14,400 RPD / 18,000 TPM",
+      "base_url": "https://api.groq.com/openai/v1",
+      "quota": "30 RPM / 14,400 RPD / 18,000 TPM",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "HelixMind",
+      "url": "https://helixmind.online",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 3 RPM / 50 RPD",
+      "base_url": "https://helixmind.online/v1",
+      "quota": "3 RPM / 50 RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Intern AI",
+      "url": "https://internlm.intern-ai.org.cn",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 30 RPM / 300,000 TPM / 90,000,000 Tokens per month (3,000,000 TPD)",
+      "base_url": "https://chat.intern-ai.org.cn/api/v1/",
+      "quota": "30 RPM / 300,000 TPM / 90,000,000 Tokens per month (3,000,000 TPD)",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "IteraCompute",
+      "url": "https://iteracompute.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 30M tokens/month / 160K TPM / 128K context",
+      "base_url": "https://api.iteracompute.com/v1",
+      "quota": "30M tokens/month / 160K TPM / 128K context",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Kenari AI",
+      "url": "https://kenari.id",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5 RPM / 50 RPD / Free Models only",
+      "base_url": "https://kenari.id/v1",
+      "quota": "5 RPM / 50 RPD / Free Models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Kilo Gateway",
+      "url": "https://app.kilo.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5 RPM / 200 RPD",
+      "base_url": "https://api.kilo.ai/api/gateway",
+      "quota": "5 RPM / 200 RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "LiteRouter",
+      "url": "https://literouter.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Unlimited Requests (for some Free models) / 1 concurrent request / 7s Cooldown",
+      "base_url": "https://api.literouter.com/v1",
+      "quota": "Unlimited Requests (for some Free models) / 1 concurrent request / 7s Cooldown",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "LLM.Kiwi",
+      "url": "https://llm.kiwi",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 40 RPH / No Credit Card",
+      "base_url": "https://api.llm.kiwi/v1",
+      "quota": "40 RPH / No Credit Card",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "LLM7.IO",
+      "url": "https://llm7.io",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 40 RPM / 2,400 RPD / 128,000 Characters per Request / 1,000,000 TPD",
+      "base_url": "https://api.llm7.io/v1",
+      "quota": "40 RPM / 2,400 RPD / 128,000 Characters per Request / 1,000,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "MegaNova AI",
+      "url": "https://meganova.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 60 RPM / 550 RPD / 200,000 TPM",
+      "base_url": "https://api.meganova.ai/v1",
+      "quota": "60 RPM / 550 RPD / 200,000 TPM",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Mistral AI",
+      "url": "https://console.mistral.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** ~2-30 RPM / 50,000 TPM shared pool",
+      "base_url": "https://api.mistral.ai/v1",
+      "quota": "~2-30 RPM / 50,000 TPM shared pool",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Mixlayer",
+      "url": "https://www.mixlayer.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 20 RPM / Can be rate-limited (daily usage)",
+      "base_url": "https://models.mixlayer.ai/v1",
+      "quota": "20 RPM / Can be rate-limited (daily usage)",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Naga AI",
+      "url": "https://naga.ac",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPM / 100 RPD",
+      "base_url": "https://api.naga.ac/v1",
+      "quota": "10 RPM / 100 RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "NVIDIA NIM",
+      "url": "https://build.nvidia.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 40 RPM / Uncapped TPD",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "quota": "40 RPM / Uncapped TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Ollama Cloud",
+      "url": "https://ollama.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 1 Instance / 14-day Usage Reset",
+      "base_url": "https://api.ollama.com",
+      "quota": "1 Instance / 14-day Usage Reset",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Orcarouter",
+      "url": "https://orcarouter.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Unspecified rate limits / Free models only",
+      "base_url": "https://api.orcarouter.ai/v1",
+      "quota": "Unspecified rate limits / Free models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Poixe AI",
+      "url": "https://poixe.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10,000 RPD / 10,000,000 TPD",
+      "base_url": "https://api.poixe.com/v1",
+      "quota": "10,000 RPD / 10,000,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Pooled AI",
+      "url": "https://ai.pooled.dev",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 1M TPD / MiniMax models only",
+      "base_url": "https://ai.pooled.dev/v1",
+      "quota": "1M TPD / MiniMax models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Poolside",
+      "url": "https://poolside.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 20 RPM / 200 RPD / 150,000 TPM / 1,000,000 TPD",
+      "base_url": "https://inference.poolside.ai/v1",
+      "quota": "20 RPM / 200 RPD / 150,000 TPM / 1,000,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Routeway AI",
+      "url": "https://routeway.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5 RPM / 200 RPD / 300,000 TPD",
+      "base_url": "https://api.routeway.ai/v1",
+      "quota": "5 RPM / 200 RPD / 300,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "SEA-LION",
+      "url": "https://playground.sea-lion.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPM",
+      "base_url": "https://api.sea-lion.ai/v1",
+      "quota": "10 RPM",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "SimpleLLM",
+      "url": "https://app.simplellm.eu/dashboard",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 100 RPH / 1,000 RPD / 50,000 TPH / 500,000 TPD",
+      "base_url": "https://api.simplellm.eu/v1",
+      "quota": "100 RPH / 1,000 RPD / 50,000 TPH / 500,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Synap",
+      "url": "https://synap.linkrra.com/ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** API models only / 100,000 TPD",
+      "base_url": "https://synap.linkrra.com/v1",
+      "quota": "API models only / 100,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "TokenHarbor",
+      "url": "https://tokenharbor.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 60 RPM / 1,800 RPH / Free Allowance on rolling 7-day period",
+      "base_url": "https://tokenharbor.ai/v1",
+      "quota": "60 RPM / 1,800 RPH / Free Allowance on rolling 7-day period",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "TokenReply",
+      "url": "https://tokenreply.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 3 RPM / Free Models Only",
+      "base_url": "https://api.tokenreply.com/v1",
+      "quota": "3 RPM / Free Models Only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Void AI",
+      "url": "https://voidai.app",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 100 RPM / 125,000 Daily Credits",
+      "base_url": "https://api.voidai.app/v1",
+      "quota": "100 RPM / 125,000 Daily Credits",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "xKiro AI",
+      "url": "https://xkiro.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5M TPD / Free models only",
+      "base_url": "https://api.xkiro.com/v1",
+      "quota": "5M TPD / Free models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Zhipu AI",
+      "url": "https://z.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 1 Concurrent Request / Uncapped TPD",
+      "base_url": "https://api.z.ai/api/paas/v4",
+      "quota": "1 Concurrent Request / Uncapped TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Zydit AI",
+      "url": "https://zydit.in",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Unlimited Requests / 10 RPM / Free models only (For v3 endpoints)",
+      "base_url": "https://api.zydit.in/v3",
+      "quota": "Unlimited Requests / 10 RPM / Free models only (For v3 endpoints)",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Zylo API",
+      "url": "https://zyloai.net",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPM / 7,200 RPD / 200,000 TPD",
+      "base_url": "https://api.zyloai.net/v1",
+      "quota": "10 RPM / 7,200 RPD / 200,000 TPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Agnes AI",
+      "url": "https://www.agnes-ai.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 20 RPM / 1,000 RPD",
+      "base_url": "https://apihub.agnes-ai.com/v1",
+      "quota": "20 RPM / 1,000 RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Concentrate AI",
+      "url": "https://concentrate.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Free models only",
+      "base_url": "https://api.concentrate.ai/v1",
+      "quota": "Free models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "APIShare",
+      "url": "https://apishare.cc",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Free Models only",
+      "base_url": "https://apishare.cc/v1",
+      "quota": "Free Models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Auriko",
+      "url": "https://www.auriko.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 500 RPM (BYOK) / 1,000 RPM (Platform) / 1,000,000 tokens/month (BYOK) / Has Permanently Free models",
+      "base_url": "https://api.auriko.ai/v1",
+      "quota": "500 RPM (BYOK) / 1,000 RPM (Platform) / 1,000,000 tokens/month (BYOK) / Has Permanently Free models",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "BazaarLink",
+      "url": "https://bazaarlink.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPM / 50 RPD / Free Models only",
+      "base_url": "https://api.bazaarlink.ai/v1",
+      "quota": "10 RPM / 50 RPD / Free Models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "FastRouter",
+      "url": "https://fastrouter.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPD per model / No Billing Credits Required",
+      "base_url": "https://api.fastrouter.ai/api/v1",
+      "quota": "10 RPD per model / No Billing Credits Required",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "LLMTR",
+      "url": "https://llmtr.com",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Free Models only / Varied or Unspecified Rate Limits",
+      "base_url": "https://llmtr.com/v1",
+      "quota": "Free Models only / Varied or Unspecified Rate Limits",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Munito AI",
+      "url": "https://munito.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 - 400 RPM / 30,000 - 400,000 Input TPM / 400 - 60,000 Output TPM",
+      "base_url": "https://api.munito.ai/inference/v1",
+      "quota": "10 - 400 RPM / 30,000 - 400,000 Input TPM / 400 - 60,000 Output TPM",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Odirouter",
+      "url": "https://odirouter.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 5 RPM / 50 RPD / Free Models Only / 2 Parallel Multimodal Queries",
+      "base_url": "https://api.odirouter.ai/v1",
+      "quota": "5 RPM / 50 RPD / Free Models Only / 2 Parallel Multimodal Queries",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "OpenRouter",
+      "url": "https://openrouter.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 20 RPM / 50 RPD",
+      "base_url": "https://openrouter.ai/api/v1",
+      "quota": "20 RPM / 50 RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Opper",
+      "url": "https://opper.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 10 RPM each model / 50 RPD",
+      "base_url": "https://api.opper.ai/v3/compat",
+      "quota": "10 RPM each model / 50 RPD",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Requesty",
+      "url": "https://requesty.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** 200 RPD / Free Models only",
+      "base_url": "https://router.requesty.ai/v1",
+      "quota": "200 RPD / Free Models only",
+      "verified": "November 02, 2026",
+      "models": []
+    },
+    {
+      "name": "Tokeness",
+      "url": "https://tokeness.ai",
+      "description": "\ud83c\udf81 **Free Tier Quota:** Unspecified Rate Limits / Free models only",
+      "base_url": "https://n.tokeness.dev/v1",
+      "quota": "Unspecified Rate Limits / Free models only",
+      "verified": "November 02, 2026",
+      "models": []
+    }
+  ]
+}
