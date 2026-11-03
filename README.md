@@ -4,6 +4,8 @@
 
 > A single-file interactive HTML experience — no build step, no dependencies beyond CDN-hosted Three.js and GSAP. Open `index.html` in any modern browser.
 
+**🔗 Live:** [GitHub Pages](https://marktantongco.github.io/sharpening-iron/) · [Vercel](https://sharpening-iron-lovat.vercel.app)
+
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
 ![Three.js](https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white)
@@ -101,16 +103,20 @@ sharpening-iron/
 
 ## Deployment
 
+### Live URLs
+
+- **GitHub Pages:** https://marktantongco.github.io/sharpening-iron/
+- **Vercel:** https://sharpening-iron-lovat.vercel.app
+
 ### GitHub Pages
 
-**Live:** `https://marktantongco.github.io/sharpening-iron/`
-
 1. Push the repo to GitHub.
-2. Go to **Settings → Pages**.
-3. Set **Source** to `Deploy from a branch` → `main` → `/root`.
-4. Save. GitHub will serve `index.html` at `https://<user>.github.io/sharpening-iron/`.
+2. The repo includes `.github/workflows/pages.yml` which auto-deploys `master` to GitHub Pages on every push using the official `actions/deploy-pages@v4` action.
+3. Pages are served from the repo root `/`.
 
 ### Vercel
+
+The repo includes a `vercel.json` configured for static deployment with SPA rewrites to `index.html`.
 
 ```bash
 # Install Vercel CLI if you haven't
@@ -121,7 +127,7 @@ cd sharpening-iron
 vercel --prod
 ```
 
-Or connect the GitHub repo to Vercel via the dashboard for automatic deploys on push. **Note:** The Vercel CLI in this sandbox rejects all provided tokens; use the dashboard instead.
+Or connect the GitHub repo to Vercel via the dashboard (https://vercel.com/new) for automatic deploys on every push to `master`.
 
 ---
 
@@ -155,10 +161,9 @@ To add a checkpoint:
 
 ## Known caveats
 
-- **Google Fonts CDN:** Requires internet on first load. After that the browser caches them. Local fallbacks are defined via `@font-face`.
+- **Google Fonts CDN:** Requires internet on first load. After that the browser caches them. Local fallbacks are defined via `@font-face`. Note: the current build actually embeds both fonts as base64 WOFF2 directly in the CSS, so no external font requests are made after page load.
 - **godly.website** now redirects to recent.design.
 - **Rope & checkpoint placement** may need nudging on real devices — the values are in `buildRopes()` and the `panel` grid.
-- **Vercel:** The Vercel CLI in this environment rejects all provided API tokens. You can deploy manually at https://vercel.com/new by importing the GitHub repo. GitHub Pages remains the primary live deployment.
 
 ---
 
