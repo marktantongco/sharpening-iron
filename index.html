@@ -837,14 +837,7 @@ function frame(now){
 /* 7 · WebGL boot (after the display font is ready so voxel type samples the real letters) */
 async function initGL(){
   if(!window.THREE) throw new Error('three missing');
-  // Font loading: use document.fonts.ready with a hard timeout to avoid hangs
-  try{
-    await Promise.race([
-      document.fonts.ready,
-      new Promise(function(r){setTimeout(r,1500);})
-    ]);
-  }catch(e){}
-  // Also attempt to load Bodoni Moda explicitly (may fail on inlined fonts)
+  // Font loading removed - just proceed directly
   const canvas=$('#gl');
   const renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
