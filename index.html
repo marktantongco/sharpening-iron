@@ -872,8 +872,8 @@ function start(){
   if(reduce){addEventListener('scroll',function(){frame(0);},{passive:true}); frame(0);}
   else{(function loop(n){frame(n); requestAnimationFrame(loop);})(performance.now());}
 }
-initGL().then(function(g){glx=g; onResize(); start();}).catch(function(){
-  document.documentElement.classList.add('nogl'); glx=null; start();
+initGL().then(function(g){glx=g; window.glx=g; onResize(); start();}).catch(function(){
+  document.documentElement.classList.add('nogl'); glx=null; window.glx=null; start();
 });
 
 /* 8 · Intro: one orchestrated moment on the masthead */
