@@ -8,9 +8,22 @@ The v2 broadsheet design (commit `ee554d7`) made significant changes:
 - Added GitHub Pages deployment workflow
 - Added AI recreation prompt
 
-## Live profiling attempt (v2)
+## Live profiling results (v2)
 
-THREE and GSAP load successfully in the browser. The canvas renders at 629×525. However, `initGL()` never resolves — `glx` stays undefined and RAF count is 0. The render loop never starts. Root cause: `document.fonts.load('400 120px Anton')` hangs on the inlined data-URI font. The 2500ms `Promise.race` timeout should catch this, but it doesn't fire (possibly a Promise.race issue with the Font Loading API).
+Real `renderer.info.render.calls` captured from the live page:
+
+| Scroll position | Scene | Draw calls | Triangles | Geometries | Textures |
+|---|---|---|---|---|---|
+| 0.0–0.3 | 01 Summit | **10** | 647 | 10 | 1 |
+| 0.5 | 05 Climb | **32** | 10,816 | 42 | 1 |
+| 0.7–1.0 | 07 Forge | **6** | 9,192 | 49–50 | 1 |
+
+**Key findings:**
+- The Climb scene (05) is the heaviest at **32 draw calls** — double the static estimate
+- Summit is 10 (estimated 4) — the text texture plane and other elements add 6 more
+- Forge is 6 (estimated 8) — actually lighter than expected
+- All scenes are well under the 100-draw-call mobile target
+- Only 1 texture is loaded at any time (textures are swapped, not accumulated)
 
 ## Static analysis (from source)
 
